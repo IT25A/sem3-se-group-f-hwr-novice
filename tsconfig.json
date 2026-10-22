@@ -4,5 +4,7 @@
 		"strict": true,
 		"types": ["$app/types", "node"]
 	},
+	"emitDecoratorMetadata": true,
+	"experimentalDecorators": true,
 	"include": ["src", "vite.config.ts"]
 }

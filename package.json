@@ -34,5 +34,10 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"better-sqlite3": "^12.11.1",
+		"reflect-metadata": "^0.2.2",
+		"typeorm": "^1.1.2"
 	}
 }
