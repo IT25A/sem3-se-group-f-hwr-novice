@@ -47,6 +47,7 @@
 	"dependencies": {
 		"argon2": "^0.45.1",
 		"better-sqlite3": "^13.0.2",
-		"ical": "^0.8.0"
+		"ical": "^0.8.0",
+		"svelte5plus-calendar": "^0.5.5"
 	}
 }
