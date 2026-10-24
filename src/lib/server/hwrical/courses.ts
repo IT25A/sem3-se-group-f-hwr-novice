@@ -1,4 +1,4 @@
-import { COURSES_URL, type CourseResponse } from '#lib/server/hwrical/hwrical';
+import { COURSES_URL, type CourseResponse } from './hwrical.ts';
 
 export async function fetchCourses(): Promise<CourseResponse> {
 	return await fetch(COURSES_URL()).then((res) => res.json());

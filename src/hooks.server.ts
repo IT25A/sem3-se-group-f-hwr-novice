@@ -1,10 +1,9 @@
 import type { Handle } from '@sveltejs/kit/hooks';
 import { type Cookies, redirect, type RequestEvent } from '@sveltejs/kit';
 import { checkToken } from '#lib/server/auth/session.ts';
-import { db } from '#lib/server/db';
+import { db } from '#lib/server/db/index.ts';
 import { userTable } from '#lib/server/db/schema.ts';
 import { eq } from 'drizzle-orm';
-import { fetchCourses, fetchCoursesNames } from '#lib/server/hwrical/courses.ts';
 
 const loginUrl = (redirectTo?: string) => `/login?redirectTo=${redirectTo}`;
 
