@@ -1,11 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { eq } from 'drizzle-orm';
-import { db } from '#lib/server/db';
+import { db } from '#lib/server/db/index.ts';
 import { type Module, moduleTable } from '#lib/server/db/schema.ts';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const modules: Module[] = await db.select().from(moduleTable).where(eq(moduleTable.user_id, locals.user.id)).all();
+	const modules: Module[] = db.select().from(moduleTable).where(eq(moduleTable.user_id, locals.user.id)).all();
 	return { modules };
 };
 
@@ -14,7 +14,7 @@ export const actions = {
         const userId = locals.user.id;
 
 		const data = await request.formData();
-		const name = String(data.get('name')?.trim());
+		const name = String(data.get('name'))?.trim();
 
 		if (!name || !userId) {
             return fail(400, { error: 'Invalid name or user ID', name, userId });
