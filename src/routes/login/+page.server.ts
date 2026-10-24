@@ -17,7 +17,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const session = login(username.toString(), password.toString());
+			const session = await login(username.toString(), password.toString());
 			cookies.set('session_token', session.session_token, {
 				sameSite: 'lax',
 				path: '/'
