@@ -11,10 +11,11 @@ if (!username || !password) {
 const dbPath = process.env.DATABASE_URL || './data/database.sqlite';
 
 const db = new Database(dbPath);
+const id = crypto.randomUUID();
 const hash = await argon2.hash(password);
 
 try {
-    db.prepare('INSERT INTO user (id, name, password_hash) VALUES (?, ?, ?)').run(username, username, hash);
+    db.prepare('INSERT INTO user (id, name, password_hash) VALUES (?, ?, ?)').run(id, username, hash);
     console.log(`User '${username}' created successfully.`);
 } catch (error) {
     console.error(`Error creating user '${username}': ${error.message}`);
