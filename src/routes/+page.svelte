@@ -1,3 +1,7 @@
+<script lang="ts">
+    import { resolve } from '$app/paths';
+</script>
+
 <header>
     <div class="hero">
         <div class="hero-content">
@@ -20,8 +24,8 @@
 
 <nav>
     <ul>
-        <li><a href="/login">Einloggen</a></li>
-        <li><a href="/register">Registrieren</a></li>
+        <li><a href={resolve('/login')}>Einloggen</a></li>
+        <li><a href={resolve('/register')}>Registrieren</a></li>
     </ul>
 </nav>
 
