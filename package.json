@@ -24,6 +24,7 @@
 		"@sveltejs/kit": "^3.0.0",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
 		"@types/better-sqlite3": "^9.6.0",
+		"@types/ical": "^0.8.3",
 		"@types/node": "^24",
 		"drizzle-kit": "^0.31.10",
 		"drizzle-orm": "^0.45.2",
@@ -45,6 +46,8 @@
 	},
 	"dependencies": {
 		"argon2": "^0.45.1",
-		"better-sqlite3": "^13.0.2"
+		"better-sqlite3": "^13.0.2",
+		"ical": "^0.8.0",
+		"svelte5plus-calendar": "^0.5.5"
 	}
 }
