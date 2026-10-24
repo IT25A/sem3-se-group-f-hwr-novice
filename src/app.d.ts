@@ -7,7 +7,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			userId: string,
-			user: User
+			user: Omit<User, "password_hash">
 		}
 		// interface PageData {}
 		// interface PageState {}

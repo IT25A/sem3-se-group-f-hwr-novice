@@ -9,5 +9,5 @@ export type User = {
 export const userTable = sqliteTable("user", {
 	id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
 	name: text("name").unique().notNull(),
-	password_hash: text("password_hash")
+	password_hash: text("password_hash").notNull()
 })

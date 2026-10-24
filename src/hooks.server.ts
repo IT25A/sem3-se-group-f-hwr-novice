@@ -30,14 +30,17 @@ export const handle: Handle = async ({ event, resolve }) => {
 		handleAuth(cookies, event);
 	}
 
-	event.locals.user = db
+	const user = db
 		.select()
 		.from(userTable)
 		.where(eq(userTable.id, event.locals.userId))
 		.get();
 
-	if(event.locals.user){
-		event.locals.user.password_hash = '';
+	if(user) {
+		event.locals.user = {
+			id: user.id,
+			name: user.name
+		};
 	}
 
 	return await resolve(event);

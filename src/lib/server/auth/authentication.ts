@@ -9,7 +9,7 @@ export class AuthenticationError extends Error {
 }
 
 export function login(username: string, password: string): Session {
-	const user: User = db.select().from(userTable).where(eq(userTable.name, username)).limit(1).get();
+	const user: User | undefined = db.select().from(userTable).where(eq(userTable.name, username)).limit(1).get();
 
 	if(!user) {
 		throw new AuthenticationError();
