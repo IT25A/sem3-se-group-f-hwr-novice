@@ -4,6 +4,7 @@ import { checkToken } from '#lib/server/auth/session.ts';
 import { db } from '#lib/server/db';
 import { userTable } from '#lib/server/db/schema.ts';
 import { eq } from 'drizzle-orm';
+import { fetchCourses, fetchCoursesNames } from '#lib/server/hwrical/courses.ts';
 
 const loginUrl = (redirectTo?: string) => `/login?redirectTo=${redirectTo}`;
 
@@ -28,19 +29,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 
 	if (route.id?.startsWith('/(auth)')) {
 		handleAuth(cookies, event);
-	}
 
-	const user = db
-		.select()
-		.from(userTable)
-		.where(eq(userTable.id, event.locals.userId))
-		.get();
+		const user = db.select().from(userTable).where(eq(userTable.id, event.locals.userId)).get();
 
-	if(user) {
-		event.locals.user = {
-			id: user.id,
-			name: user.name
-		};
+		if (user) {
+			event.locals.user = {
+				id: user.id,
+				name: user.name
+			};
+		}
 	}
 
 	return await resolve(event);
