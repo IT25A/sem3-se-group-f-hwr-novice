@@ -1,21 +1,15 @@
 <script>
-    import { goto } from '$app/navigation';   
-    
-    let email = $state('');
-    let password = $state('');
-
-    // ToDo: Hier später die Login-Funktionen implementieren!
-
+    import { goto } from '$app/navigation';
 </script>
 
 <h1>Login</h1>
 
-<form>
-    <label for="email">E-Mail: </label>
+<form method="POST">
+    <label for="username">E-Mail: </label>
     <input
-        id="email"
-        type="email"
-        bind:value={email}
+        id="username"
+        name="username"
+        type="text"
         required
     />
 
@@ -24,8 +18,8 @@
     <label for="password">Passwort: </label>
     <input
         id="password"
+        name="password"
         type="password"
-        bind:value={password}
         required
     />
 
