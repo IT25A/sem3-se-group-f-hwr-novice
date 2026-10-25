@@ -1,6 +1,7 @@
 <script lang="ts">
     import {Calendar, type CalendarEvent} from "svelte5plus-calendar";
 	import type { PageProps } from "./$types";
+    import { resolve } from '$app/paths';
 
     let { data }: PageProps = $props();
 
@@ -20,7 +21,15 @@
 <h1>Dashboard | Hello, {data.user.name}!</h1>
 <p>You got successfully forwarded to the official HWR Novice dashboard!</p>
 
-<div id="calendar">
+<nav>
+    <ul>
+        <li><a href={resolve('/(auth)/modules')}>Pomodoro Timer</a></li>
+        <li><a href={resolve('/(auth)/tracker')}>Credit Tracker</a></li>
+        <li><a href={resolve('/(auth)/calendar')}>Event Calendar</a></li>
+    </ul>
+</nav>
+
+<div>
     <Calendar bind:events view="week" locale="de" />
 </div>
 
@@ -66,9 +75,65 @@
 
     }
 
-    #calendar {
+    nav {
+        background: white;
+
+        border-bottom: 1px solid var(--border);
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 1000;
+
+    }
+
+    nav ul {
+
+        max-width: var(--max-width);
+
         margin: auto;
-        max-width: 80vw;
+
+        display: flex;
+
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+        list-style: none;
+
+    }
+
+    nav li {
+
+        margin: 0;
+
+    }
+
+    nav a {
+
+        display: block;
+
+        padding: 20px;
+
+        color: var(--primary);
+
+        text-decoration: none;
+
+        transition: .25s;
+
+        font-family: "Inter", sans-serif;
+
+        line-height: 1.75;
+
+    }
+
+    nav a:hover {
+
+        color: var(--accent);
+
+        font-weight: 700;
+        
     }
 
 </style>
