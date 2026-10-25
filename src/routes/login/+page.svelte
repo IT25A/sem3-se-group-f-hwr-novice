@@ -38,6 +38,7 @@
 
 </div>
 
+
 <style>
 
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap');
@@ -136,12 +137,6 @@
         text-align: center;
 
         padding: 120px 50px;
-        
-        background: linear-gradient(
-                135deg,
-                #ffffff 0%,
-                #f9ecee 100%
-        );
 
     }
 
