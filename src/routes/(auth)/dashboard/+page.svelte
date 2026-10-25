@@ -20,7 +20,7 @@
 <h1>Dashboard | Hello, {data.user.name}!</h1>
 <p>You got successfully forwarded to the official HWR Novice dashboard!</p>
 
-<div>
+<div id="calendar">
     <Calendar bind:events view="week" locale="de" />
 </div>
 
@@ -64,6 +64,11 @@
         
         line-height: 1.75;
 
+    }
+
+    #calendar {
+        margin: auto;
+        max-width: 80vw;
     }
 
 </style>
