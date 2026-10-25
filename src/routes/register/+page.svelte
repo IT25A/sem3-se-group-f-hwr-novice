@@ -171,12 +171,6 @@
 
         padding: 120px 50px;
 
-        background: linear-gradient(
-                135deg,
-                #ffffff 0%,
-                #f9ecee 100%
-        );
-
     }
 
 </style>
