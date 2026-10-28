@@ -53,21 +53,6 @@
 </div>
 
 <style>
-    :root {
-        --background: #f7f5f3;
-        --surface: #ffffff;
-        --primary: #1f1f1f;
-        --secondary: #5a5a5a;
-        --accent: #A51C30;
-        --accent-dark: #7E1525;
-        --accent-light: #C74A5C;
-        --border: #d8d3cf;
-        --card-bg: #ffffff;
-        --shadow: 0 8px 24px rgba(0, 0, 0, .08);
-        --radius: 16px;
-        --max-width: 1200px;
-    }
-
     #username {
 
         background: white;
