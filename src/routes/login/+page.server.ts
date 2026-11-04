@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { AuthenticationError, login } from '#lib/server/auth/authentication.ts';
 
 export const actions: Actions = {
-	default: async ({ request,url, cookies }) => {
+	default: async ({ request, url, cookies }) => {
 		const data = await request.formData();
 		const username = data.get('username');
 		const password = data.get('password');
@@ -23,7 +23,7 @@ export const actions: Actions = {
 				path: '/'
 			});
 
-			const redirectTo = url.searchParams.get("redirectTo") ?? "/dashboard"
+			const redirectTo = url.searchParams.get('redirectTo') ?? '/dashboard';
 
 			redirect(303, redirectTo);
 		} catch (e: unknown) {

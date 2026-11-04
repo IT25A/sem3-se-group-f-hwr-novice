@@ -20,6 +20,7 @@ async function handleAuth(cookies: Cookies, event: RequestEvent) {
 	}
 
 	event.locals.userId = userId;
+	event.locals.sessionToken = sessionToken;
 }
 
 export const handle: Handle = async ({ event, resolve }) => {

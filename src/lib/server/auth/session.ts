@@ -26,5 +26,5 @@ export async function createSession(userId: string): Promise<string> {
 }
 
 export function deleteSession(sessionId: string) {
-	db.delete(sessionTable).where(eq(sessionTable.id, sessionId))
+	db.delete(sessionTable).where(eq(sessionTable.id, sessionId)).run()
 }
