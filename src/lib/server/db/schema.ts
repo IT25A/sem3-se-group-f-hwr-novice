@@ -39,10 +39,10 @@ export type Pomodoro = {
 export const pomodoroTable = sqliteTable('pomodoro', {
 	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()).references(() => moduleTable.id, { onDelete: 'cascade' }),
 	user_id: text('user_id').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
-	module_id: text('module_id').$default(null).references(() => moduleTable.id, { onDelete: 'set null'}),
+	module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null'}),
 	type: text('type', { enum: ['work', 'break'] }).notNull(),
 	planned_duration: integer('planned_duration').notNull(),
 	started_at: integer('started_at', { mode: 'timestamp' }).notNull(),
-	ended_at: integer('ended_at', { mode: 'timestamp'}).$default(null),
-	status: text('status', { enum: ['running', 'completed', 'cancelled'] }).notNull().$default('running')
+	ended_at: integer('ended_at', { mode: 'timestamp'}),
+	status: text('status', { enum: ['running', 'completed', 'cancelled'] }).notNull().default('running')
 });
