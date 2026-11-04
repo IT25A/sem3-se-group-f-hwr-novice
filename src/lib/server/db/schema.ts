@@ -12,6 +12,18 @@ export const userTable = sqliteTable("user", {
 	password_hash: text("password_hash").notNull()
 })
 
+export type Session = {
+	id: string,
+	userId: string,
+	token_hash: string
+}
+
+export const sessionTable = sqliteTable("session", {
+	id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+	userId: text().references(() => userTable.id, { onDelete: "cascade" }).notNull(),
+	token_hash: text().notNull()
+})
+
 export type Module = {
 	id: string,
 	user_id: string;

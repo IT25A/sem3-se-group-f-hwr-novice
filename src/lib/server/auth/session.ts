@@ -1,29 +1,30 @@
-export class Session {
-	constructor(
-		public readonly userId: string,
-		public readonly session_token: string
-	) {}
+import { sessionTable } from '#lib/server/db/schema.ts';
+import { db } from '#lib/server/db/index.ts';
+import { eq } from 'drizzle-orm';
+import * as argon2 from 'argon2';
+
+const getSession = (sessionId: string) =>
+	db.select().from(sessionTable).where(eq(sessionTable.id, sessionId)).get();
+
+export async function checkToken(token: string): Promise<string | undefined> {
+	const [id, secret] = token.split(':');
+	const session = getSession(id);
+	if (!session) return undefined;
+	return (await argon2.verify(session.token_hash, secret)) ? session.userId : undefined;
 }
 
-const sessions: Session[] = [];
-
-export function getSessions(userId: string): Session[] {
-	return sessions.filter((it) => it.userId === userId);
-}
-
-export function checkToken(token: string): string | undefined {
-	return sessions.find(it => it.session_token === token)?.userId
-}
-
-export function createSession(userId: string): Session {
+export async function createSession(userId: string): Promise<string> {
 	const token = crypto.randomUUID();
-	const session = new Session(userId, token);
-	sessions.push(session);
-	return session;
+	const session = {
+		userId,
+		token_hash: await argon2.hash(token)
+	};
+
+	const { id } = db.insert(sessionTable).values(session).returning().get();
+
+	return `${id}:${token}`;
 }
 
-export function deleteSession(userId: string, token: string) {
-	const session = sessions.find((it) => it.userId === userId && it.session_token === token);
-	if (!session) return;
-	sessions.splice(sessions.indexOf(session));
+export function deleteSession(sessionId: string) {
+	db.delete(sessionTable).where(eq(sessionTable.id, sessionId))
 }

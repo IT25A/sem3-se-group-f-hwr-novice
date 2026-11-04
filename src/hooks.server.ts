@@ -7,12 +7,12 @@ import { eq } from 'drizzle-orm';
 
 const loginUrl = (redirectTo?: string) => `/login?redirectTo=${redirectTo}`;
 
-function handleAuth(cookies: Cookies, event: RequestEvent) {
+async function handleAuth(cookies: Cookies, event: RequestEvent) {
 	const sessionToken = cookies.get('session_token');
 
 	if (!sessionToken) return redirect(301, loginUrl(event.url.pathname));
 
-	const userId = checkToken(sessionToken);
+	const userId = await checkToken(sessionToken);
 
 	if (!userId) {
 		cookies.delete('session_token');
@@ -27,7 +27,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	const route = event.route;
 
 	if (route.id?.startsWith('/(auth)')) {
-		handleAuth(cookies, event);
+		await handleAuth(cookies, event);
 
 		const user = db.select().from(userTable).where(eq(userTable.id, event.locals.userId)).get();
 
