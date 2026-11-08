@@ -25,7 +25,7 @@
     <ul>
         <li><a href={resolve('/(auth)/modules')}>Pomodoro Timer</a></li>
         <li><a href={resolve('/(auth)/tracker')}>Credit Tracker</a></li>
-        <li><a href={resolve('/(auth)/calendar')}>Event Calendar</a></li>
+        <li><a href={resolve('/(auth)/asta')}>Event Calendar</a></li>
     </ul>
 </nav>
 
