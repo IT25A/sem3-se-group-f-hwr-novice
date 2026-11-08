@@ -13,6 +13,8 @@
                 id="username"
                 name="username"
                 type="text"
+                minlength="3"
+                maxlength="32"
                 required
         />
 
@@ -27,6 +29,7 @@
                 id="password"
                 name="password"
                 type="password"
+                minlength="8"
                 required
         />
 
@@ -41,6 +44,7 @@
                 id="repetition"
                 name="repetition"
                 type="password"
+                minlength="8"
                 required
         />
 
