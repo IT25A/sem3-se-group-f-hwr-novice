@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/IT25A/deploy-workflows/main/schema/it25a.schema.json
+# HWR Novice: SvelteKit app with a SQLite database file that survives updates
+version: 1
+services:
+  app:
+    build: .                         # the Dockerfile in the root of the repository
+    port: 3000
+    route: { host: "@" }             # https://<alias>.apps.it25a.de
+    volumes:
+      - "app-data:/data"             # a folder that survives updates: name:folder in the container
+    environment:
+      ORIGIN: "{{ url.app }}"        # the public address; SvelteKit needs it behind a proxy (form actions)
+      DATABASE_URL: /data/app.db     # the file lies in the volume "app-data" (see volumes)

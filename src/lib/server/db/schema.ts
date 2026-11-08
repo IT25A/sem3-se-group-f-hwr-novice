@@ -49,7 +49,7 @@ export type Pomodoro = {
 }
 
 export const pomodoroTable = sqliteTable('pomodoro', {
-	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()).references(() => moduleTable.id, { onDelete: 'cascade' }),
+	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
 	user_id: text('user_id').notNull().references(() => userTable.id, { onDelete: 'cascade' }),
 	module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null'}),
 	type: text('type', { enum: ['work', 'break'] }).notNull(),
