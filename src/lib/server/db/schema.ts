@@ -58,3 +58,21 @@ export const pomodoroTable = sqliteTable('pomodoro', {
 	ended_at: integer('ended_at', { mode: 'timestamp'}),
 	status: text('status', { enum: ['running', 'completed', 'cancelled'] }).notNull().default('running')
 });
+
+export type AstaEvent = {
+	id: string;
+	user_id: string;
+	title: string;
+	date: string;
+	time: string;
+	location: string;
+}
+
+export const astaEventTable = sqliteTable('asta_event', {
+	id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+	user_id: text('user_id').notNull().references(() => userTable.id, { onDelete: 'cascade' }), 
+	title: text('title').notNull(),
+	date: text('date').notNull(),
+	time: text('time').notNull(),
+	location: text('location').notNull()
+});	
