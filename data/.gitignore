@@ -1,2 +1,4 @@
 *.sqlite*
 *.db
+*.sqlite-shm
+*.sqlite-wal

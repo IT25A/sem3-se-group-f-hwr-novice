@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, unique } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 
 export type User = {
 	id: string;
@@ -32,23 +32,46 @@ export const sessionTable = sqliteTable('session', {
 
 export type Module = {
 	id: string;
-	user_id: string;
+	code: string;
 	name: string;
+	lp: number;
+	exam_le: number;
+	self_study_le: number;
 };
 
-export const moduleTable = sqliteTable(
-	'module',
-	{
-		id: text('id')
-			.primaryKey()
-			.$defaultFn(() => crypto.randomUUID()),
-		user_id: text('user_id')
-			.notNull()
-			.references(() => userTable.id, { onDelete: 'cascade' }),
-		name: text('name').notNull()
-	},
-	(t) => [unique().on(t.user_id, t.name)]
-);
+export const moduleTable = sqliteTable('module', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	code: text('code').notNull().unique(),
+	name: text('name').notNull(),
+	lp: integer('lp').notNull(),
+	exam_le: integer('exam_le').notNull().default(0),
+	self_study_le: integer('self_study_le').notNull().default(0)
+});
+
+export type StoredLesson = {
+	id: string;
+	key: string;
+	module_id: string | null;
+	kind: string;
+	title: string;
+	location: string;
+	starts_at: Date;
+	ends_at: Date;
+};
+
+export const lessonTable = sqliteTable('lesson', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	key: text('key').notNull().unique(),
+	module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null' }),
+	kind: text('kind').notNull(),
+	location: text('location').notNull().default(''),
+	starts_at: integer('starts_at', { mode: 'timestamp' }).notNull(),
+	ends_at: integer('ends_at', { mode: 'timestamp' }).notNull()
+});
 
 export type Pomodoro = {
 	id: string;
