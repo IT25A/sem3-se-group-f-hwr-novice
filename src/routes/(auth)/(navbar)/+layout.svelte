@@ -56,9 +56,10 @@
 		position: sticky;
 		display: block;
 		height: 100dvh;
+		min-width: max-content;
 		width: 15%;
 		background-color: #d82425;
-		padding: 5rem 0;
+		padding: 5rem 1rem;
 		box-sizing: border-box;
 	}
 
@@ -81,7 +82,7 @@
 		display: flex;
 		flex-flow: column;
 		list-style: none;
-		padding: 0 1rem;
+		padding: 0;
 		gap: 0.5rem;
 	}
 
