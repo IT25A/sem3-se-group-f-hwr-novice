@@ -12,3 +12,7 @@
     --radius: 16px;
     --max-width: 1200px;
 }
+
+body {
+    margin: 0;
+}
