@@ -24,8 +24,8 @@
 
 <nav>
     <ul>
-        <li><a href={resolve('/login')}>Einloggen</a></li>
-        <li><a href={resolve('/register')}>Registrieren</a></li>
+        <li><a href={resolve('/(login+register)/login')}>Einloggen</a></li>
+        <li><a href={resolve('/(login+register)/register')}>Registrieren</a></li>
     </ul>
 </nav>
 
