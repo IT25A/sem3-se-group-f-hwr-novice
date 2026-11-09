@@ -4,7 +4,7 @@
 
 	let { data }: PageProps = $props();
 
-	let events = $state<CalendarEvent[]>(
+	let events = $derived<CalendarEvent[]>(
 		data.events.map((it, index) => ({
 			id: index + '',
 			title: it.title,
@@ -24,7 +24,7 @@
 {/if}
 
 <div>
-	<Calendar bind:events view="week" locale="de" />
+	<Calendar {events} view="week" locale="de" />
 </div>
 
 <style>
