@@ -6,7 +6,7 @@ export const SCHEDULE_URL = (study: string, course: Course) =>
 
 export interface Course {
 	course_part: string;
-	display_name: string;
+	display_name?: string;
 	year_part: string;
 }
 
@@ -15,9 +15,9 @@ export interface CourseResponse {
 }
 
 export interface Lesson {
-	start: Date,
-	end: Date,
-	location: string,
-	title: string,
-	description: string,
+	start: Date;
+	end: Date;
+	location: string;
+	title: string;
+	description: string;
 }

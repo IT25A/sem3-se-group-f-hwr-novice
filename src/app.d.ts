@@ -6,9 +6,9 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			userId: string,
-			sessionToken: string,
-			user: Omit<User, "password_hash">
+			userId: string;
+			sessionToken: string;
+			user: Omit<User, 'password_hash'>;
 		}
 		// interface PageData {}
 		// interface PageState {}

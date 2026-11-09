@@ -64,8 +64,8 @@ export async function register(username: string, password: string): Promise<stri
 
 function isUniqueConstraintError(e: unknown): boolean {
 	return (
-		e instanceof Error && 
-		'code' in e && 
-		(e.code === 'SQLITE_CONSTRAINT_UNIQUE' || e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY')	
+		e instanceof Error &&
+		'code' in e &&
+		(e.code === 'SQLITE_CONSTRAINT_UNIQUE' || e.code === 'SQLITE_CONSTRAINT_PRIMARYKEY')
 	);
 }

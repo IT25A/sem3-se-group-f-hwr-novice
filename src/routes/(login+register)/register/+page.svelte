@@ -1,162 +1,126 @@
 <div id="center">
+	<h1>Registrieren</h1>
 
-    <h1>Registrieren</h1>
+	<br />
 
-    <br>
+	<form method="POST">
+		<label for="username">Benutzername: </label>
 
-    <form method="POST">
-        <label for="username">Benutzername: </label>
+		<br />
 
-        <br>
+		<input id="username" name="username" type="text" minlength="3" maxlength="32" required />
 
-        <input
-                id="username"
-                name="username"
-                type="text"
-                minlength="3"
-                maxlength="32"
-                required
-        />
+		<br />
+		<br />
 
-        <br>
-        <br>
+		<label for="password">Passwort: </label>
 
-        <label for="password">Passwort: </label>
+		<br />
 
-        <br>
+		<input id="password" name="password" type="password" minlength="8" required />
 
-        <input
-                id="password"
-                name="password"
-                type="password"
-                minlength="8"
-                required
-        />
+		<br />
+		<br />
 
-        <br>
-        <br>
+		<label for="repetition">Passwort: </label>
 
-        <label for="repetition">Passwort: </label>
+		<br />
 
-        <br>
+		<input id="repetition" name="repetition" type="password" minlength="8" required />
 
-        <input
-                id="repetition"
-                name="repetition"
-                type="password"
-                minlength="8"
-                required
-        />
+		<br />
+		<br />
 
-        <br>
-        <br>
-
-        <button type="submit">Registrieren</button>
-    </form>
-
+		<button type="submit">Registrieren</button>
+	</form>
 </div>
 
 <style>
-    #username {
+	#username {
+		background: white;
 
-        background: white;
+		padding: 10px 18px;
 
-        padding: 10px 18px;
+		border-radius: 40px;
 
-        border-radius: 40px;
+		box-shadow: var(--shadow);
 
-        box-shadow: var(--shadow);
+		font-size: 1rem;
 
-        font-size: 1rem;
+		font-family: 'Inter', sans-serif;
 
-        font-family: "Inter", sans-serif;
-        
-        line-height: 1.75;
+		line-height: 1.75;
+	}
 
-    }
+	#password {
+		background: white;
 
-    #password {
+		padding: 10px 18px;
 
-        background: white;
+		border-radius: 40px;
 
-        padding: 10px 18px;
+		box-shadow: var(--shadow);
 
-        border-radius: 40px;
+		font-size: 1rem;
 
-        box-shadow: var(--shadow);
+		font-family: 'Inter', sans-serif;
 
-        font-size: 1rem;
+		line-height: 1.75;
+	}
 
-        font-family: "Inter", sans-serif;
-        
-        line-height: 1.75;
+	#repetition {
+		background: white;
 
-    }
+		padding: 10px 18px;
 
-    #repetition {
+		border-radius: 40px;
 
-        background: white;
+		box-shadow: var(--shadow);
 
-        padding: 10px 18px;
+		font-size: 1rem;
 
-        border-radius: 40px;
+		font-family: 'Inter', sans-serif;
 
-        box-shadow: var(--shadow);
+		line-height: 1.75;
+	}
 
-        font-size: 1rem;
+	h1 {
+		font-family: 'Cormorant Garamond', serif;
 
-        font-family: "Inter", sans-serif;
-        
-        line-height: 1.75;
+		font-size: 4rem;
 
-    }
+		font-weight: 600;
 
-     h1 {
+		margin-bottom: 0.4rem;
+	}
 
-        font-family: "Cormorant Garamond", serif;
-        
-        font-size: 4rem;
-        
-        font-weight: 600;
-        
-        margin-bottom: .4rem;
+	label {
+		font-size: 1rem;
 
-    }
+		font-family: 'Inter', sans-serif;
 
-    label {
+		line-height: 1.75;
+	}
 
-        font-size: 1rem;
+	button {
+		padding: 10px 10px 10px 10px;
 
-        font-family: "Inter", sans-serif;
-        
-        line-height: 1.75;
-    
-    }
+		border-radius: 40px;
 
-    button {
+		font-size: 1rem;
 
-        padding: 10px 10px 10px 10px;
+		font-family: 'Inter', sans-serif;
 
-        border-radius: 40px;
+		line-height: 1.75;
+	}
 
-        font-size: 1rem;
+	#center {
+		justify-content: center;
 
-        font-family: "Inter", sans-serif;
-        
-        line-height: 1.75;
+		align-items: center;
 
-    }
+		text-align: center;
 
-    #center {
-        
-        justify-content: center;
-        
-        align-items: center;
-        
-        text-align: center;
-
-        padding: 120px 50px;
-
-    }
-
+		padding: 120px 50px;
+	}
 </style>

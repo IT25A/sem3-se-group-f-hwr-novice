@@ -5,7 +5,11 @@ import { eq, and, asc } from 'drizzle-orm';
 import { type AstaEvent, astaEventTable } from '#lib/server/db/schema.ts';
 
 export const load: PageServerLoad = async () => {
-	const events: AstaEvent[] = db.select().from(astaEventTable).orderBy(asc(astaEventTable.date), asc(astaEventTable.time)).all();
+	const events: AstaEvent[] = db
+		.select()
+		.from(astaEventTable)
+		.orderBy(asc(astaEventTable.date), asc(astaEventTable.time))
+		.all();
 	return { events };
 };
 
