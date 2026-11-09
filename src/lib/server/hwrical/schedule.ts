@@ -2,8 +2,9 @@ import { type Course, type Lesson, SCHEDULE_URL } from './hwrical';
 import ICAL from 'ical';
 
 export async function fetchScheduleICal(study: string, course: Course) {
-	const icalRaw = await fetch(SCHEDULE_URL(study, course)).then((res) => res.text());
-	return ICAL.parseICS(icalRaw);
+	const res = await fetch(SCHEDULE_URL(study, course));
+	if (!res.ok) throw new Error(`Schedule request failed with status ${res.status}`);
+	return ICAL.parseICS(await res.text());
 }
 
 export async function fetchLessons(study: string, course: Course) {

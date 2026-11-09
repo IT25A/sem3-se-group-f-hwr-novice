@@ -19,6 +19,10 @@
 <h1>Dashboard | Hello, {data.user.name}!</h1>
 <p>You got successfully forwarded to the official HWR Novice dashboard!</p>
 
+{#if data.scheduleError}
+	<p>Der Stundenplan konnte gerade nicht geladen werden. Bitte versuche es später erneut.</p>
+{/if}
+
 <div>
 	<Calendar bind:events view="week" locale="de" />
 </div>
