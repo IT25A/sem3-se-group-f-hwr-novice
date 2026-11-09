@@ -20,7 +20,6 @@ CREATE TABLE `__new_module` (
 	`self_study_le` integer DEFAULT 0 NOT NULL
 );
 --> statement-breakpoint
-INSERT INTO `__new_module`("id", "code", "name", "lp", "exam_le", "self_study_le") SELECT "id", "code", "name", "lp", "exam_le", "self_study_le" FROM `module`;--> statement-breakpoint
 DROP TABLE `module`;--> statement-breakpoint
 ALTER TABLE `__new_module` RENAME TO `module`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint
