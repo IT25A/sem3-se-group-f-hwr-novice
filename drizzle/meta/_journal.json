@@ -15,6 +15,13 @@
       "when": 1794260113286,
       "tag": "0001_stale_franklin_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794345183757,
+      "tag": "0002_colossal_famine",
+      "breakpoints": true
     }
   ]
 }

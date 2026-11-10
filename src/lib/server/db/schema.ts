@@ -57,6 +57,7 @@ export type StoredLesson = {
 	kind: string;
 	title: string;
 	location: string;
+	description: string;
 	starts_at: Date;
 	ends_at: Date;
 };
@@ -68,7 +69,9 @@ export const lessonTable = sqliteTable('lesson', {
 	key: text('key').notNull().unique(),
 	module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null' }),
 	kind: text('kind').notNull(),
+	title: text('title').notNull(),
 	location: text('location').notNull().default(''),
+	description: text('description').notNull().default(''),
 	starts_at: integer('starts_at', { mode: 'timestamp' }).notNull(),
 	ends_at: integer('ends_at', { mode: 'timestamp' }).notNull()
 });
