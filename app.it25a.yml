@@ -11,3 +11,4 @@ services:
     environment:
       ORIGIN: '{{ url.app }}' # the public address; SvelteKit needs it behind a proxy (form actions)
       DATABASE_URL: /data/app.db # the file lies in the volume "app-data" (see volumes)
+      TZ: Europe/Berlin # the timezone for the app (used for date/time calculations)
