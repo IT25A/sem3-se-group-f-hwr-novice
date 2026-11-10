@@ -74,7 +74,7 @@
 		width: 85%;
 		padding: 0 5rem;
 		max-height: 100dvh;
-		overflow-y: scroll;
+		overflow-y: auto;
 		box-sizing: border-box;
 	}
 
