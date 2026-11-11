@@ -38,7 +38,7 @@
 					<a
 						class={activePage === page.path ? 'active' : ''}
 						href={page.path}
-						data-sveltekit-preload-data={page.preventPreload ? 'off' : undefined}>{page.display}</a
+						data-sveltekit-preload-data={page.preventPreload ? false : undefined}>{page.display}</a
 					>
 				</li>
 			{/each}
