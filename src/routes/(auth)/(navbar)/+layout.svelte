@@ -117,4 +117,8 @@
 	.wrapper {
 		display: flex;
 	}
+
+	* {
+		font-family: 'Inter', sans-serif;
+	}
 </style>

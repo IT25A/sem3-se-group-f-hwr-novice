@@ -53,7 +53,6 @@
 
 	p {
 		font-size: 1rem;
-		font-family: 'Inter', sans-serif;
 		line-height: 1.75;
 	}
 </style>
