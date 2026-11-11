@@ -58,7 +58,7 @@
 		height: 100dvh;
 		min-width: max-content;
 		width: 15%;
-		background-color: #d82425;
+		background-color: var(--hwr-red);
 		padding: 5rem 1rem;
 		box-sizing: border-box;
 	}
@@ -92,7 +92,7 @@
 
 	li a:hover,
 	.active {
-		background-color: #ed4141;
+		background-color: color-mix(var(--hwr-red), #ffffff60);
 		cursor: pointer;
 		margin-left: 1rem;
 	}

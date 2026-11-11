@@ -55,4 +55,10 @@
 		font-size: 1rem;
 		line-height: 1.75;
 	}
+
+	:global(.s5c) {
+		--s5c-accent: var(--hwr-red);          /* buttons, today, selection            */
+		--s5c-today-num-bg: var(--hwr-red);    /* the round "today" badge              */
+		--s5c-now-color: var(--hwr-red);       /* current-time line                    */
+	}
 </style>

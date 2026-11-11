@@ -11,6 +11,8 @@
 	--shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 	--radius: 16px;
 	--max-width: 1200px;
+
+	--hwr-red: #d82425;
 }
 
 body {
