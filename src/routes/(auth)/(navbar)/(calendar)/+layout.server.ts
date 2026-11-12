@@ -1,9 +1,10 @@
-import type { PageServerLoad } from './$types';
+import type { LayoutServerLoad } from './$types';
 import { seed } from '#lib/server/db/seed.ts';
 import { syncLessons } from '#lib/server/lessons/sync.ts';
 import { lessonTable, moduleTable } from '#lib/server/db/schema.ts';
 import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
+import type { CalendarEvent, CalendarSource } from 'svelte5plus-calendar';
 
 const KIND_NAMES: Record<string, string> = {
 	SU: 'Seminaristischer Unterricht',
@@ -13,7 +14,7 @@ const KIND_NAMES: Record<string, string> = {
 	SI: 'Seminaristischer Intensivunterricht'
 };
 
-export const load: PageServerLoad = async () => {
+export const load: LayoutServerLoad = async () => {
 	seed();
 
 	let scheduleError = false;
@@ -31,8 +32,9 @@ export const load: PageServerLoad = async () => {
 		.orderBy(lessonTable.starts_at)
 		.all();
 
-	const events = rows.map(({ lesson, module }) => {
+	const events = rows.map(({ lesson, module }, index) => {
 		return {
+			id: `${index}`,
 			title: module ? `${module.code} ${lesson.title}` : lesson.title,
 			start: lesson.starts_at,
 			end: lesson.ends_at,
@@ -43,9 +45,34 @@ export const load: PageServerLoad = async () => {
 				lesson.description
 			]
 				.filter(Boolean)
-				.join('\n')
-		};
+				.join('\n'),
+			color: lesson.kind === 'Klausur' ? 'red' : undefined,
+			calendarId: 'HWR'
+		} satisfies CalendarEvent;
 	});
 
-	return { events, scheduleError };
+	const sources: CalendarSource[] = [
+		{
+			id: 'HWR',
+			name: 'HWR Berlin - Stundenplan',
+			editable: false,
+			color: 'teal'
+		},
+		{
+			id: 'private',
+			name: 'Private Termine',
+			color: 'graphite'
+		},
+		{
+			id: 'public',
+			name: 'Öffentliche Termine',
+			color: 'blue'
+		}
+	];
+
+	return {
+		events,
+		scheduleError,
+		sources
+	};
 };

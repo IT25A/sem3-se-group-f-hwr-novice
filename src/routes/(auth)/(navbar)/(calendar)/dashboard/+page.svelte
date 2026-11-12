@@ -1,19 +1,8 @@
 <script lang="ts">
-	import { Calendar, type CalendarEvent } from 'svelte5plus-calendar';
+	import { Calendar } from 'svelte5plus-calendar';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-
-	let events = $derived<CalendarEvent[]>(
-		data.events.map((it, index) => ({
-			id: index + '',
-			title: it.title,
-			start: it.start,
-			end: it.end,
-			location: it.location,
-			description: it.description
-		}))
-	);
 </script>
 
 <div class="dashboard">
@@ -26,7 +15,16 @@
 		{/if}
 	</header>
 	<div class="calendar-wrapper">
-		<Calendar {events} view="week" locale="de" dayStartHour={7} dayEndHour={21} />
+		<Calendar
+			events={data.events}
+			sources={data.sources}
+			editable
+			view="week"
+			locale="de"
+			dayStartHour={7}
+			dayEndHour={21}
+			quickCreate={false}
+		/>
 	</div>
 </div>
 
@@ -57,8 +55,8 @@
 	}
 
 	:global(.s5c) {
-		--s5c-accent: var(--hwr-red);          /* buttons, today, selection            */
-		--s5c-today-num-bg: var(--hwr-red);    /* the round "today" badge              */
-		--s5c-now-color: var(--hwr-red);       /* current-time line                    */
+		--s5c-accent: var(--hwr-red); /* buttons, today, selection            */
+		--s5c-today-num-bg: var(--hwr-red); /* the round "today" badge              */
+		--s5c-now-color: var(--hwr-red); /* current-time line                    */
 	}
 </style>

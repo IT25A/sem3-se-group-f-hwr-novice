@@ -16,6 +16,10 @@
 			display: 'Dashboard'
 		},
 		{
+			path: '/calendar',
+			display: 'Kalendar'
+		},
+		{
 			path: '/modules',
 			display: 'Modulübersicht'
 		},
