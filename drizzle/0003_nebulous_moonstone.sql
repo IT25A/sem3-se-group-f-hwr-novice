@@ -1,0 +1,1 @@
+ALTER TABLE `module` ADD `presence_le` integer DEFAULT 0 NOT NULL;

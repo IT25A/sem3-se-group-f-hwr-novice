@@ -35,6 +35,7 @@ export type Module = {
 	code: string;
 	name: string;
 	lp: number;
+	presence_le: number;
 	exam_le: number;
 	self_study_le: number;
 };
@@ -46,6 +47,7 @@ export const moduleTable = sqliteTable('module', {
 	code: text('code').notNull().unique(),
 	name: text('name').notNull(),
 	lp: integer('lp').notNull(),
+	presence_le: integer('presence_le').notNull().default(0),
 	exam_le: integer('exam_le').notNull().default(0),
 	self_study_le: integer('self_study_le').notNull().default(0)
 });

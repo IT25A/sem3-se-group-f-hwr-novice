@@ -36,3 +36,7 @@ export function describeLesson(lesson: { lecturer: string; note: string; pause: 
 export function lessonKey(code: string | null, title: string, start: Date) {
 	return `${code ?? title}|${start.toISOString()}`;
 }
+
+export function pauseMinutes(description: string): number {
+	return Number(/Pause: (\d+) min/.exec(description)?.[1] ?? 0);
+}
