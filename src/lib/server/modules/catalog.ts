@@ -34,3 +34,9 @@ export const MODULE_CATALOG = [
 		self_study_le: 57
 	}
 ];
+
+/** Total ECTS of the whole study programme, the target of the overall progress bar. */
+export const TOTAL_ECTS = 210;
+
+/** ECTS of the semesters before the catalog (1st and 2nd semester), assumed to be passed. */
+export const EARLIER_ECTS = 70;

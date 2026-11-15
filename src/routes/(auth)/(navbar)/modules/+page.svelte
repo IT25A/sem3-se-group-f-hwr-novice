@@ -12,10 +12,20 @@
 <header>
 	<h1>Module</h1>
 	<p>Dein Fortschritt im Theorieteil dieses Semesters.</p>
-	<p>
-		<strong>Erworbene ECTS: {data.earnedLp} von {data.totalLp} LP</strong>
-		(nur die hier gelisteten Module)
-	</p>
+	<section class="overall">
+		<h2>Gesamtfortschritt</h2>
+		<progress value={data.ects.earned} max={data.ects.total}></progress>
+		<p>
+			<strong>{data.ects.earned} von {data.ects.total} ECTS</strong>
+			({percent(data.ects.earned, data.ects.total)}&nbsp;%)
+		</p>
+		<p>
+			<small>
+				Enthalten sind {data.ects.earlier} ECTS aus den früheren Semestern (als bestanden angenommen)
+				und die als bestanden markierten Module dieses Semesters.
+			</small>
+		</p>
+	</section>
 </header>
 
 <div class="modules">
@@ -67,6 +77,13 @@
 		background-color: white;
 		padding: 2.5rem 0 1rem;
 	}
+
+	.overall {
+		box-sizing: border-box;
+		max-width: 40rem;
+		margin-bottom: 1.5rem;
+	}
+
 	.modules {
 		display: flex;
 		flex-direction: column;

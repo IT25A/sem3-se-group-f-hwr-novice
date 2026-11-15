@@ -5,6 +5,7 @@ import { db } from '#lib/server/db/index.ts';
 import { lessonTable, moduleTable, pomodoroTable, modulePassTable } from '#lib/server/db/schema.ts';
 import { seed } from '#lib/server/db/seed.ts';
 import { calculateProgress } from '#lib/server/modules/progress.ts';
+import { EARLIER_ECTS, TOTAL_ECTS } from '#lib/server/modules/catalog.ts';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	seed();
@@ -50,11 +51,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		(item) => ({ ...item, passed: passedIds.has(item.module.id) })
 	);
 
-	const earnedLp = progress
+	const semesterLp = progress
 		.filter((item) => item.passed)
 		.reduce((sum, item) => sum + item.module.lp, 0);
-	const totalLp = progress.reduce((sum, item) => sum + item.module.lp, 0);
-	return { progress, earnedLp, totalLp };
+	const ects = { earned: EARLIER_ECTS + semesterLp, earlier: EARLIER_ECTS, total: TOTAL_ECTS };
+
+	return { progress, ects };
 };
 
 export const actions = {
