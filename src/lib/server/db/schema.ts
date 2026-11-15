@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
 
 export type User = {
 	id: string;
@@ -127,3 +127,25 @@ export const astaEventTable = sqliteTable('asta_event', {
 	time: text('time').notNull(),
 	location: text('location').notNull()
 });
+
+export type ModulePass = {
+	user_id: string;
+	module_id: string;
+	passed_at: Date;
+};
+
+export const modulePassTable = sqliteTable(
+	'module_pass',
+	{
+		user_id: text('user_id')
+			.notNull()
+			.references(() => userTable.id, { onDelete: 'cascade' }),
+		module_id: text('module_id')
+			.notNull()
+			.references(() => moduleTable.id, { onDelete: 'cascade' }),
+		passed_at: integer('passed_at', { mode: 'timestamp' })
+			.notNull()
+			.$defaultFn(() => new Date())
+	},
+	(table) => [primaryKey({ columns: [table.user_id, table.module_id] })]
+);

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -11,14 +12,20 @@
 <header>
 	<h1>Module</h1>
 	<p>Dein Fortschritt im Theorieteil dieses Semesters.</p>
+	<p>
+		<strong>Erworbene ECTS: {data.earnedLp} von {data.totalLp} LP</strong>
+		(nur die hier gelisteten Module)
+	</p>
 </header>
 
 <div class="modules">
 	{#each data.progress as item (item.module.id)}
-		<section>
+		<section class:passed={item.passed}>
 			<h2>
 				{item.module.code}
-				{item.module.name} <small>({item.module.lp} LP)</small>
+				{item.module.name}
+				<small>({item.module.lp} LP)</small>
+				{#if item.passed}<small class="badge">bestanden</small>{/if}
 			</h2>
 
 			<progress value={item.done} max={item.total}></progress>
@@ -43,6 +50,12 @@
 					)} LE
 				</li>
 			</ul>
+			<form method="POST" action="?/toggle" use:enhance>
+				<input type="hidden" name="module_id" value={item.module.id} />
+				<button type="submit">
+					{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
+				</button>
+			</form>
 		</section>
 	{/each}
 </div>
@@ -65,6 +78,15 @@
 	section {
 		border: 1px solid var(--border);
 		padding: 1rem 1.5rem;
+	}
+
+	section.passed {
+		border-color: green;
+	}
+
+	.badge {
+		color: green;
+		font-weight: 600;
 	}
 
 	h1 {
@@ -98,5 +120,9 @@
 	}
 	li {
 		line-height: 1.5;
+	}
+
+	form button {
+		margin-top: 0.5rem;
 	}
 </style>
