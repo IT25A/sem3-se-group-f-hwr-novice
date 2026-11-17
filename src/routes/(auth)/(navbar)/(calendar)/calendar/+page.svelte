@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { Calendar } from 'svelte5plus-calendar';
+	import {goto} from "$app/navigation";
+	import {resolve} from "$app/paths";
 
 	let { data } = $props();
 
@@ -30,7 +32,7 @@
 		{/each}
 	</div>
 
-	<button> Neuen Termin anlegen </button>
+	<button onclick={() => goto(resolve("/(auth)/(navbar)/(calendar)/calendar/create"))}>Neuen Termin anlegen</button>
 </div>
 
 <Calendar

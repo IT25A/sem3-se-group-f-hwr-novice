@@ -27,6 +27,7 @@ export type User = {
 	name: string;
 	password_hash: string;
 	course_id: string | null;
+	asta_member: boolean;
 };
 
 export const userTable = sqliteTable('user', {
@@ -35,7 +36,8 @@ export const userTable = sqliteTable('user', {
 		.$defaultFn(() => crypto.randomUUID()),
 	name: text('name').unique().notNull(),
 	password_hash: text('password_hash').notNull(),
-	course_id: text('course_id').references(() => courseTable.id, { onDelete: 'set null' })
+	course_id: text('course_id').references(() => courseTable.id, { onDelete: 'set null' }),
+	asta_member: integer('asta_member', { mode: 'boolean' }).default(false)
 });
 
 export type Session = {
@@ -138,26 +140,37 @@ export const pomodoroTable = sqliteTable('pomodoro', {
 		.default('running')
 });
 
-export type AstaEvent = {
+enum EventType {
+	PRIVATE = 'private',
+	PUBLIC = 'public',
+	GLOBAL = 'global'
+}
+
+export type Event = {
 	id: string;
 	user_id: string;
+	type: EventType;
 	title: string;
-	date: string;
-	time: string;
+	start: Date;
+	end: Date | null;
 	location: string;
+	description: string | null;
 };
 
-export const astaEventTable = sqliteTable('asta_event', {
+export const eventTable = sqliteTable('events', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	user_id: text('user_id')
 		.notNull()
 		.references(() => userTable.id, { onDelete: 'cascade' }),
+	type: text('type', { enum: ['private', 'public', 'global'] }),
 	title: text('title').notNull(),
-	date: text('date').notNull(),
+	start: integer('start', { mode: 'timestamp' }).notNull(),
+	end: integer('end', { mode: 'timestamp' }),
 	time: text('time').notNull(),
-	location: text('location').notNull()
+	location: text('location').notNull(),
+	description: text('description')
 });
 
 export type ModulePass = {

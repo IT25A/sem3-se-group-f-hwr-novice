@@ -1,8 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 import { seed } from '#lib/server/db/seed.ts';
 import { syncCourse } from '#lib/server/lessons/sync.ts';
-import { courseTable, lessonTable, moduleTable } from '#lib/server/db/schema.ts';
-import { asc, eq } from 'drizzle-orm';
+import { courseTable, eventTable, lessonTable, moduleTable } from '#lib/server/db/schema.ts';
+import { and, asc, eq, or } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
 import type { CalendarEvent, CalendarSource } from 'svelte5plus-calendar';
 
@@ -31,7 +31,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		}
 	}
 
-	const rows = course
+	const courseRows = course
 		? db
 				.select()
 				.from(lessonTable)
@@ -41,7 +41,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 				.all()
 		: [];
 
-	const events = rows.map(({ lesson, module }, index) => {
+	const courses = courseRows.map(({ lesson, module }, index) => {
 		return {
 			id: `${index}`,
 			title: module ? `${module.code} ${lesson.title}` : lesson.title,
@@ -59,6 +59,32 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			calendarId: 'HWR'
 		} satisfies CalendarEvent;
 	});
+
+	const eventRows = db.select().from(eventTable)
+		.where(
+			or(
+				and(
+					eq(eventTable.type, "private"),
+					eq(eventTable.user_id, locals.userId)
+				),
+				eq(eventTable.type, "public"),
+				eq(eventTable.type, "global")
+			)
+		).all()
+
+	const events = eventRows.map((it) => {
+		return {
+			id: it.id,
+			editable: locals.userId == it.user_id,
+			calendarId: it.type == "private" ? "private" : "public",
+			title: it.title,
+			location: it.location,
+			description: it.description ?? "",
+			start: it.start,
+			allDay: it.end == null,
+			end: it.end ?? it.start
+		} satisfies CalendarEvent;
+	})
 
 	const sources: CalendarSource[] = [
 		{
@@ -80,7 +106,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	];
 
 	return {
-		events,
+		events: [...courses, ...events],
 		scheduleError,
 		sources,
 		hasCourse: Boolean(course)
