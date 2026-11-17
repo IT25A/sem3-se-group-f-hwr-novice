@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Calendar } from 'svelte5plus-calendar';
 	import type { PageProps } from './$types';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 </script>
@@ -12,6 +13,12 @@
 
 		{#if data.scheduleError}
 			<p>Der Stundenplan konnte gerade nicht geladen werden. Bitte versuche es später erneut.</p>
+		{/if}
+		{#if !data.hasCourse}
+			<p>
+				Du hast noch keinen Kurs gewählt, deshalb gibt es keinen Stundenplan.
+				<a href={resolve('/(auth)/(navbar)/course')}>Kurs auswählen</a>
+			</p>
 		{/if}
 	</header>
 	<div class="calendar-wrapper">

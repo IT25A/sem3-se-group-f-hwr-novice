@@ -11,7 +11,15 @@ export const load: PageServerLoad = async ({ locals }) => {
 	seed();
 
 	const modules = db.select().from(moduleTable).orderBy(asc(moduleTable.code)).all();
-	const lessons = db.select().from(lessonTable).where(isNotNull(lessonTable.module_id)).all();
+	const lessons = locals.user.course_id
+		? db
+				.select()
+				.from(lessonTable)
+				.where(
+					and(eq(lessonTable.course_id, locals.user.course_id), isNotNull(lessonTable.module_id))
+				)
+				.all()
+		: [];
 
 	const sessions = db
 		.select()

@@ -1,9 +1,32 @@
-import { sqliteTable, text, integer, primaryKey } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, primaryKey, uniqueIndex } from 'drizzle-orm/sqlite-core';
+
+export type Course = {
+	id: string;
+	study: string;
+	course_part: string;
+	cohort: number;
+	synced_at: Date | null;
+};
+
+export const courseTable = sqliteTable(
+	'course',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		study: text('study').notNull(),
+		course_part: text('course_part').notNull(),
+		cohort: integer('cohort').notNull(),
+		synced_at: integer('synced_at', { mode: 'timestamp' })
+	},
+	(table) => [uniqueIndex('course_unique').on(table.study, table.course_part, table.cohort)]
+);
 
 export type User = {
 	id: string;
 	name: string;
 	password_hash: string;
+	course_id: string | null;
 };
 
 export const userTable = sqliteTable('user', {
@@ -11,7 +34,8 @@ export const userTable = sqliteTable('user', {
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
 	name: text('name').unique().notNull(),
-	password_hash: text('password_hash').notNull()
+	password_hash: text('password_hash').notNull(),
+	course_id: text('course_id').references(() => courseTable.id, { onDelete: 'set null' })
 });
 
 export type Session = {
@@ -55,6 +79,7 @@ export const moduleTable = sqliteTable('module', {
 export type StoredLesson = {
 	id: string;
 	key: string;
+	course_id: string;
 	module_id: string | null;
 	kind: string;
 	title: string;
@@ -64,19 +89,26 @@ export type StoredLesson = {
 	ends_at: Date;
 };
 
-export const lessonTable = sqliteTable('lesson', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	key: text('key').notNull().unique(),
-	module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null' }),
-	kind: text('kind').notNull(),
-	title: text('title').notNull(),
-	location: text('location').notNull().default(''),
-	description: text('description').notNull().default(''),
-	starts_at: integer('starts_at', { mode: 'timestamp' }).notNull(),
-	ends_at: integer('ends_at', { mode: 'timestamp' }).notNull()
-});
+export const lessonTable = sqliteTable(
+	'lesson',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		key: text('key').notNull(),
+		course_id: text('course_id')
+			.notNull()
+			.references(() => courseTable.id, { onDelete: 'cascade' }),
+		module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null' }),
+		kind: text('kind').notNull(),
+		title: text('title').notNull(),
+		location: text('location').notNull().default(''),
+		description: text('description').notNull().default(''),
+		starts_at: integer('starts_at', { mode: 'timestamp' }).notNull(),
+		ends_at: integer('ends_at', { mode: 'timestamp' }).notNull()
+	},
+	(table) => [uniqueIndex('lesson_course_key').on(table.course_id, table.key)]
+);
 
 export type Pomodoro = {
 	id: string;

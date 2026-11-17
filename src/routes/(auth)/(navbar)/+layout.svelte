@@ -24,6 +24,10 @@
 			display: 'Modulübersicht'
 		},
 		{
+			path: '/course',
+			display: 'Kurs'
+		},
+		{
 			path: '/logout',
 			display: 'Ausloggen',
 			preventPreload: true

@@ -1,8 +1,8 @@
 import type { LayoutServerLoad } from './$types';
 import { seed } from '#lib/server/db/seed.ts';
-import { syncLessons } from '#lib/server/lessons/sync.ts';
-import { lessonTable, moduleTable } from '#lib/server/db/schema.ts';
-import { eq } from 'drizzle-orm';
+import { syncCourse } from '#lib/server/lessons/sync.ts';
+import { courseTable, lessonTable, moduleTable } from '#lib/server/db/schema.ts';
+import { asc, eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
 import type { CalendarEvent, CalendarSource } from 'svelte5plus-calendar';
 
@@ -14,23 +14,32 @@ const KIND_NAMES: Record<string, string> = {
 	SI: 'Seminaristischer Intensivunterricht'
 };
 
-export const load: LayoutServerLoad = async () => {
+export const load: LayoutServerLoad = async ({ locals }) => {
 	seed();
 
+	const course = locals.user.course_id
+		? db.select().from(courseTable).where(eq(courseTable.id, locals.user.course_id)).get()
+		: undefined;
+
 	let scheduleError = false;
-	try {
-		await syncLessons();
-	} catch (error) {
-		console.error('Could not sync the schedule', error);
-		scheduleError = true;
+	if (course) {
+		try {
+			await syncCourse(course);
+		} catch (error) {
+			console.error('Could not sync the schedule', error);
+			scheduleError = true;
+		}
 	}
 
-	const rows = db
-		.select()
-		.from(lessonTable)
-		.leftJoin(moduleTable, eq(lessonTable.module_id, moduleTable.id))
-		.orderBy(lessonTable.starts_at)
-		.all();
+	const rows = course
+		? db
+				.select()
+				.from(lessonTable)
+				.leftJoin(moduleTable, eq(lessonTable.module_id, moduleTable.id))
+				.where(eq(lessonTable.course_id, course.id))
+				.orderBy(asc(lessonTable.starts_at))
+				.all()
+		: [];
 
 	const events = rows.map(({ lesson, module }, index) => {
 		return {
@@ -73,6 +82,7 @@ export const load: LayoutServerLoad = async () => {
 	return {
 		events,
 		scheduleError,
-		sources
+		sources,
+		hasCourse: Boolean(course)
 	};
 };
