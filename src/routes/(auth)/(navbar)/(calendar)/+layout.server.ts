@@ -1,7 +1,13 @@
 import type { LayoutServerLoad } from './$types';
 import { seed } from '#lib/server/db/seed.ts';
 import { syncCourse } from '#lib/server/lessons/sync.ts';
-import { courseTable, eventTable, lessonTable, moduleTable } from '#lib/server/db/schema.ts';
+import {
+	courseTable,
+	eventTable,
+	lessonTable,
+	moduleTable,
+	userTable
+} from '#lib/server/db/schema.ts';
 import { and, asc, eq, or } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
 import type { CalendarEvent, CalendarSource } from 'svelte5plus-calendar';
@@ -60,31 +66,40 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		} satisfies CalendarEvent;
 	});
 
-	const eventRows = db.select().from(eventTable)
-		.where(
-			or(
-				and(
-					eq(eventTable.type, "private"),
-					eq(eventTable.user_id, locals.userId)
-				),
-				eq(eventTable.type, "public"),
-				eq(eventTable.type, "global")
-			)
-		).all()
+	const eventRows = db
+	.select({ event: eventTable })
+	.from(eventTable)
+	.innerJoin(userTable, eq(eventTable.user_id, userTable.id))
+	.where(
+		or(
+			and(
+				eq(eventTable.type, 'private'),
+				eq(eventTable.user_id, locals.user.id)
+			),
+			and(
+				eq(eventTable.type, 'public'),
+				locals.user.course_id
+					? eq(userTable.course_id, locals.user.course_id)
+					: eq(userTable.id, '')
+			),
+			eq(eventTable.type, 'global')
+		)
+	)
+	.all();
 
-	const events = eventRows.map((it) => {
+	const events = eventRows.map(({ event: it }) => {
 		return {
 			id: it.id,
 			editable: locals.userId == it.user_id,
-			calendarId: it.type == "private" ? "private" : "public",
+			calendarId: it.type == 'private' ? 'private' : 'public',
 			title: it.title,
 			location: it.location,
-			description: it.description ?? "",
+			description: it.description ?? '',
 			start: it.start,
 			allDay: it.end == null,
 			end: it.end ?? it.start
 		} satisfies CalendarEvent;
-	})
+	});
 
 	const sources: CalendarSource[] = [
 		{
