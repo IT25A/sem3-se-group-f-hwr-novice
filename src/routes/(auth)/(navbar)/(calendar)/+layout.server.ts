@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { seed } from '#lib/server/db/seed.ts';
+import { linkLessons } from '#lib/server/modules/personal.ts';
 import { syncCourse } from '#lib/server/lessons/sync.ts';
 import {
 	courseTable,
@@ -21,8 +21,6 @@ const KIND_NAMES: Record<string, string> = {
 };
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-	seed();
-
 	const course = locals.user.course_id
 		? db.select().from(courseTable).where(eq(courseTable.id, locals.user.course_id)).get()
 		: undefined;
@@ -37,20 +35,30 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		}
 	}
 
-	const courseRows = course
-		? db
-				.select()
-				.from(lessonTable)
-				.leftJoin(moduleTable, eq(lessonTable.module_id, moduleTable.id))
-				.where(eq(lessonTable.course_id, course.id))
-				.orderBy(asc(lessonTable.starts_at))
-				.all()
+	const modules = db
+		.select()
+		.from(moduleTable)
+		.where(eq(moduleTable.user_id, locals.user.id))
+		.all();
+	const modulesById = new Map(modules.map((module) => [module.id, module]));
+
+	const lessons = course
+		? linkLessons(
+				db
+					.select()
+					.from(lessonTable)
+					.where(eq(lessonTable.course_id, course.id))
+					.orderBy(asc(lessonTable.starts_at))
+					.all(),
+				modules
+			)
 		: [];
 
-	const courses = courseRows.map(({ lesson, module }, index) => {
+	const courses = lessons.map((lesson, index) => {
+		const module = lesson.module_id ? modulesById.get(lesson.module_id) : undefined;
 		return {
 			id: `${index}`,
-			title: module ? `${module.code} ${lesson.title}` : lesson.title,
+			title: lesson.code ? `${lesson.code} ${lesson.title}` : lesson.title,
 			start: lesson.starts_at,
 			end: lesson.ends_at,
 			location: lesson.location,
@@ -67,25 +75,22 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	});
 
 	const eventRows = db
-	.select({ event: eventTable })
-	.from(eventTable)
-	.innerJoin(userTable, eq(eventTable.user_id, userTable.id))
-	.where(
-		or(
-			and(
-				eq(eventTable.type, 'private'),
-				eq(eventTable.user_id, locals.user.id)
-			),
-			and(
-				eq(eventTable.type, 'public'),
-				locals.user.course_id
-					? eq(userTable.course_id, locals.user.course_id)
-					: eq(userTable.id, '')
-			),
-			eq(eventTable.type, 'global')
+		.select({ event: eventTable })
+		.from(eventTable)
+		.innerJoin(userTable, eq(eventTable.user_id, userTable.id))
+		.where(
+			or(
+				and(eq(eventTable.type, 'private'), eq(eventTable.user_id, locals.user.id)),
+				and(
+					eq(eventTable.type, 'public'),
+					locals.user.course_id
+						? eq(userTable.course_id, locals.user.course_id)
+						: eq(userTable.id, '')
+				),
+				eq(eventTable.type, 'global')
+			)
 		)
-	)
-	.all();
+		.all();
 
 	const events = eventRows.map(({ event: it }) => {
 		return {

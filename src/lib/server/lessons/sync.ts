@@ -1,7 +1,7 @@
-import { eq, asc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '../db';
-import { lessonTable, moduleTable, type Course, courseTable } from '../db/schema';
-import { semesterOf } from '../courses/semester';
+import { lessonTable, type Course, courseTable } from '../db/schema.ts';
+import { semesterOf } from '../courses/semester.ts';
 import { fetchLessons } from '../hwrical/schedule.ts';
 import { BASELINE } from '../lessons/baseline.ts';
 import { lessonKey, parseLesson, describeLesson } from './parser';
@@ -14,7 +14,7 @@ const BASELINES: Record<string, string[]> = {
 	'informatik/kursa/2025': BASELINE
 };
 
-function insertBaseline(course: Course, moduleIds: Map<string, string>) {
+function insertBaseline(course: Course) {
 	const lines = BASELINES[`${course.study}/${course.course_part}/${course.cohort}`];
 	if (!lines) return;
 
@@ -32,7 +32,7 @@ function insertBaseline(course: Course, moduleIds: Map<string, string>) {
 		return {
 			course_id: course.id,
 			key: lessonKey(code, title, startsAt),
-			module_id: moduleIds.get(code) ?? null,
+			code,
 			kind,
 			title,
 			location,
@@ -50,14 +50,7 @@ export async function syncCourse(course: Course) {
 
 	if (Date.now() - (course.synced_at?.getTime() ?? 0) < MIN_INTERVAL_MS) return;
 
-	const moduleIds = new Map(
-		db
-			.select()
-			.from(moduleTable)
-			.all()
-			.map((module) => [module.code, module.id])
-	);
-	insertBaseline(course, moduleIds);
+	insertBaseline(course);
 
 	const feed = await fetchLessons(course.study, {
 		course_part: course.course_part,
@@ -71,7 +64,7 @@ export async function syncCourse(course: Course) {
 		return {
 			course_id: course.id,
 			key: lessonKey(code, title, lesson.start),
-			module_id: code ? (moduleIds.get(code) ?? null) : null,
+			code,
 			kind,
 			title,
 			location: lesson.location ?? '',

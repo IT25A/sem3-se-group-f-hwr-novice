@@ -5,6 +5,7 @@ import { db } from '#lib/server/db/index.ts';
 import { courseTable, userTable } from '#lib/server/db/schema.ts';
 import { fetchCourseOptions } from '#lib/server/hwrical/courses.ts';
 import { semesterOf } from '#lib/server/courses/semester.ts';
+import { adoptCatalog } from '#lib/server/modules/personal.ts';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const course = locals.user.course_id
@@ -84,6 +85,7 @@ export const actions = {
 			.set({ course_id: course.id })
 			.where(eq(userTable.id, locals.user.id))
 			.run();
+		adoptCatalog(locals.user.id, course);
 		redirect(303, '/dashboard');
 	}
 } satisfies Actions;

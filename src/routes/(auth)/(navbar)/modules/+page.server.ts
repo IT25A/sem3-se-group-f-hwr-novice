@@ -2,23 +2,45 @@ import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
 import { asc, eq, and, isNotNull } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
-import { lessonTable, moduleTable, pomodoroTable, modulePassTable } from '#lib/server/db/schema.ts';
-import { seed } from '#lib/server/db/seed.ts';
+import {
+	lessonTable,
+	moduleTable,
+	pomodoroTable,
+	modulePassTable,
+	courseTable
+} from '#lib/server/db/schema.ts';
 import { calculateProgress } from '#lib/server/modules/progress.ts';
-import { EARLIER_ECTS, TOTAL_ECTS } from '#lib/server/modules/catalog.ts';
+import {
+	CATALOGS,
+	catalogFor,
+	ECTS_PER_SEMESTER,
+	TOTAL_ECTS
+} from '#lib/server/modules/catalog.ts';
+import { linkLessons } from '#lib/server/modules/personal.ts';
+import { semesterOf } from '#lib/server/courses/semester.ts';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	seed();
+	const modules = db
+		.select()
+		.from(moduleTable)
+		.where(eq(moduleTable.user_id, locals.user.id))
+		.orderBy(asc(moduleTable.name))
+		.all();
 
-	const modules = db.select().from(moduleTable).orderBy(asc(moduleTable.code)).all();
+	const course = locals.user.course_id
+		? db.select().from(courseTable).where(eq(courseTable.id, locals.user.course_id)).get()
+		: undefined;
+
+	// semesters before the current one are assumed to be passed. Without a course nothing is.
+	const earlier = course
+		? ECTS_PER_SEMESTER * Math.min(Math.max(semesterOf(course.cohort) - 1, 0), 6)
+		: 0;
+
 	const lessons = locals.user.course_id
-		? db
-				.select()
-				.from(lessonTable)
-				.where(
-					and(eq(lessonTable.course_id, locals.user.course_id), isNotNull(lessonTable.module_id))
-				)
-				.all()
+		? linkLessons(
+				db.select().from(lessonTable).where(eq(lessonTable.course_id, locals.user.course_id)).all(),
+				modules
+			)
 		: [];
 
 	const sessions = db
@@ -59,10 +81,27 @@ export const load: PageServerLoad = async ({ locals }) => {
 		(item) => ({ ...item, passed: passedIds.has(item.module.id) })
 	);
 
+	const currentCodes = new Set(
+		course
+			? catalogFor(course.study, course.cohort, semesterOf(course.cohort)).map(
+					(module) => module.code
+				)
+			: []
+	);
+
+	const catalogCodes = new Set(
+		Object.values(CATALOGS)
+			.flat()
+			.map((module) => module.code)
+	);
+
+	const countsForSemester = (code: string | null) =>
+		!course || !code || !catalogCodes.has(code) || currentCodes.has(code);
+
 	const semesterLp = progress
-		.filter((item) => item.passed)
+		.filter((item) => item.passed && countsForSemester(item.module.code))
 		.reduce((sum, item) => sum + item.module.lp, 0);
-	const ects = { earned: EARLIER_ECTS + semesterLp, earlier: EARLIER_ECTS, total: TOTAL_ECTS };
+	const ects = { earned: earlier + semesterLp, earlier, total: TOTAL_ECTS };
 
 	return { progress, ects };
 };
@@ -73,7 +112,11 @@ export const actions = {
 		const module_id = (await request.formData()).get('module_id')?.toString() ?? '';
 		const user_id = locals.user.id;
 
-		const found = db.select().from(moduleTable).where(eq(moduleTable.id, module_id)).get();
+		const found = db
+			.select()
+			.from(moduleTable)
+			.where(and(eq(moduleTable.id, module_id), eq(moduleTable.user_id, user_id)))
+			.get();
 		if (!found) return fail(400, { error: 'Unknown module' });
 
 		const deleted = db

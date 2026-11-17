@@ -37,7 +37,7 @@ export const userTable = sqliteTable('user', {
 	name: text('name').unique().notNull(),
 	password_hash: text('password_hash').notNull(),
 	course_id: text('course_id').references(() => courseTable.id, { onDelete: 'set null' }),
-	asta_member: integer('asta_member', { mode: 'boolean' }).default(false)
+	asta_member: integer('asta_member', { mode: 'boolean' }).default(false).notNull()
 });
 
 export type Session = {
@@ -58,7 +58,8 @@ export const sessionTable = sqliteTable('session', {
 
 export type Module = {
 	id: string;
-	code: string;
+	user_id: string;
+	code: string | null;
 	name: string;
 	lp: number;
 	presence_le: number;
@@ -66,23 +67,30 @@ export type Module = {
 	self_study_le: number;
 };
 
-export const moduleTable = sqliteTable('module', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	code: text('code').notNull().unique(),
-	name: text('name').notNull(),
-	lp: integer('lp').notNull(),
-	presence_le: integer('presence_le').notNull().default(0),
-	exam_le: integer('exam_le').notNull().default(0),
-	self_study_le: integer('self_study_le').notNull().default(0)
-});
+export const moduleTable = sqliteTable(
+	'module',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		user_id: text('user_id')
+			.notNull()
+			.references(() => userTable.id, { onDelete: 'cascade' }),
+		code: text('code'),
+		name: text('name').notNull(),
+		lp: integer('lp').notNull(),
+		presence_le: integer('presence_le').notNull().default(0),
+		exam_le: integer('exam_le').notNull().default(0),
+		self_study_le: integer('self_study_le').notNull().default(0)
+	},
+	(table) => [uniqueIndex('module_user_code').on(table.user_id, table.code)]
+);
 
 export type StoredLesson = {
 	id: string;
 	key: string;
 	course_id: string;
-	module_id: string | null;
+	code: string | null;
 	kind: string;
 	title: string;
 	location: string;
@@ -101,7 +109,7 @@ export const lessonTable = sqliteTable(
 		course_id: text('course_id')
 			.notNull()
 			.references(() => courseTable.id, { onDelete: 'cascade' }),
-		module_id: text('module_id').references(() => moduleTable.id, { onDelete: 'set null' }),
+		code: text('code'),
 		kind: text('kind').notNull(),
 		title: text('title').notNull(),
 		location: text('location').notNull().default(''),

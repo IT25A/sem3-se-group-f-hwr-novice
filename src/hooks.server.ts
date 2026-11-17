@@ -36,7 +36,8 @@ export const handle: Handle = async ({ event, resolve }) => {
 			event.locals.user = {
 				id: user.id,
 				name: user.name,
-				course_id: user.course_id
+				course_id: user.course_id,
+				asta_member: user.asta_member
 			};
 		}
 	}

@@ -10,9 +10,13 @@ const lessonMinutes = (lesson: Pick<StoredLesson, 'starts_at' | 'ends_at' | 'des
 	(lesson.ends_at.getTime() - lesson.starts_at.getTime()) / 60_000 -
 	pauseMinutes(lesson.description);
 
+type LinkedLesson = Pick<StoredLesson, 'kind' | 'starts_at' | 'ends_at' | 'description'> & {
+	module_id: string | null;
+};
+
 export function calculateProgress(
 	modules: Module[],
-	lessons: Pick<StoredLesson, 'module_id' | 'kind' | 'starts_at' | 'ends_at' | 'description'>[],
+	lessons: LinkedLesson[],
 	selfStudyMinutes: Map<string, number>,
 	now: Date
 ) {
@@ -24,11 +28,12 @@ export function calculateProgress(
 		const le = (list: typeof own) =>
 			list.reduce((sum, lesson) => sum + toLe(lessonMinutes(lesson)), 0);
 
+		const target = module.presence_le || le(teaching); // value of study programme description or sum of teaching lessons if not specified
 		const finished = le(teaching.filter((lesson) => lesson.ends_at <= now));
 		const allOver = teaching.length > 0 && teaching.every((lesson) => lesson.ends_at <= now);
 		const presence = {
-			done: allOver ? module.presence_le : Math.min(module.presence_le, finished),
-			total: module.presence_le
+			done: allOver ? target : Math.min(target, finished),
+			total: target
 		};
 		const exam = {
 			taken: exams.some((lesson) => lesson.ends_at <= now),
