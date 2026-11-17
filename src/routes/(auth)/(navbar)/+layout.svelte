@@ -17,7 +17,7 @@
 		},
 		{
 			path: '/calendar',
-			display: 'Kalendar'
+			display: 'Kalender'
 		},
 		{
 			path: '/modules',
