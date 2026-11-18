@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Calendar } from 'svelte5plus-calendar';
-	import {goto} from "$app/navigation";
-	import {resolve} from "$app/paths";
+	import EventDialog from './EventDialog.svelte';
 
 	let { data } = $props();
+
+	let eventDialog = $state<ReturnType<typeof EventDialog>>();
 
 	let visibility = $state<Record<string, boolean>>({});
 
@@ -32,7 +33,7 @@
 		{/each}
 	</div>
 
-	<button onclick={() => goto(resolve("/(auth)/(navbar)/(calendar)/calendar/create"))}>Neuen Termin anlegen</button>
+	<button onclick={() => eventDialog?.show()}>Neuen Termin anlegen</button>
 </div>
 
 <Calendar
@@ -46,6 +47,8 @@
 	quickCreate={false}
 	class="calendar"
 />
+
+<EventDialog bind:this={eventDialog} canPostGlobal={data.user.asta_member} />
 
 <style>
 	h1 {
@@ -79,8 +82,8 @@
 	}
 
 	:global(.s5c) {
-		--s5c-accent: var(--hwr-red); /* buttons, today, selection            */
-		--s5c-today-num-bg: var(--hwr-red); /* the round "today" badge              */
-		--s5c-now-color: var(--hwr-red); /* current-time line                    */
+		--s5c-accent: var(--hwr-red); /* buttons, today, selection */
+		--s5c-today-num-bg: var(--hwr-red); /* the round "today" badge */
+		--s5c-now-color: var(--hwr-red); /* current-time line */
 	}
 </style>
