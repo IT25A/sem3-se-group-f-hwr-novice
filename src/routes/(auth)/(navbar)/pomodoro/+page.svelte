@@ -1,5 +1,24 @@
 <script lang="ts">
+	import type { PageProps } from './$types';
 	import { PHASE_NAMES, pomodoro } from '#lib/pomodoro.svelte.ts';
+
+	let { data }: PageProps = $props();
+
+	const dateTime = new Intl.DateTimeFormat('de-DE', {
+		day: '2-digit',
+		month: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
+
+	// A remembered module may have been deleted in the meantime.
+	$effect(() => {
+		const id = pomodoro.moduleId;
+		if (id && !pomodoro.moduleLocked && !data.modules.some((module) => module.id === id)) {
+			pomodoro.moduleId = null;
+			pomodoro.saveModule();
+		}
+	});
 </script>
 
 <h1>Pomodoro</h1>
@@ -8,6 +27,20 @@
 	<p class="phase">{PHASE_NAMES[pomodoro.phase]}</p>
 	<p class="time" role="timer">{pomodoro.label}</p>
 	<progress value={pomodoro.progress} max="1"></progress>
+
+	<label class="module">
+		Modul
+		<select
+			bind:value={pomodoro.moduleId}
+			onchange={() => pomodoro.saveModule()}
+			disabled={pomodoro.moduleLocked}
+		>
+			<option value={null}>Ohne Modul</option>
+			{#each data.modules as module (module.id)}
+				<option value={module.id}>{module.code ? `${module.code} ` : ''}{module.name}</option>
+			{/each}
+		</select>
+	</label>
 
 	<p class="cycle">
 		Fokuszeiten bis zur Langpause: {pomodoro.cycle} von {pomodoro.config.every}
@@ -38,6 +71,28 @@
 			<button onclick={() => pomodoro.skipBreak()}>Pause überspringen</button>
 		{/if}
 	</div>
+	{#if pomodoro.error}<p class="error">{pomodoro.error}</p>{/if}
+</section>
+
+<section class="log">
+	<h2>Fokuszeit</h2>
+	<p>
+		Heute: <strong>{data.today.count}</strong>
+		{data.today.count === 1 ? 'Intervall' : 'Intervalle'},
+		<strong>{data.today.minutes} Min.</strong>
+	</p>
+	{#if data.recent.length > 0}
+		<ul>
+			{#each data.recent as session (session.id)}
+				<li>
+					{session.ended_at ? dateTime.format(session.ended_at) : ''} · {session.minutes} Min. ·
+					{session.module ?? 'Ohne Modul'}
+				</li>
+			{/each}
+		</ul>
+	{:else}
+		<p>Noch keine abgeschlossenen Fokuszeiten.</p>
+	{/if}
 </section>
 
 <section class="settings">
@@ -160,5 +215,19 @@
 
 	input[type='number'] {
 		width: 5rem;
+	}
+
+	.module {
+		display: block;
+		margin-top: 0.75rem;
+	}
+
+	.error {
+		color: var(--hwr-red);
+	}
+
+	.log ul {
+		margin: 0.5rem 0 0 0;
+		padding-left: 1.25rem;
 	}
 </style>

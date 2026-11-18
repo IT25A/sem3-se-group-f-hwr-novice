@@ -3,8 +3,7 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { PHASE_NAMES, pomodoro } from '#lib/pomodoro.svelte.ts';
-
-	onMount(() => pomodoro.init());
+	import type { LayoutProps } from './$types';
 
 	const title = $derived(
 		pomodoro.status === 'running'
@@ -12,7 +11,12 @@
 			: 'HWR Novice'
 	);
 
-	let { children } = $props();
+	let { children, data }: LayoutProps = $props();
+
+	onMount(() => {
+		pomodoro.init(data.user.id);
+		return () => pomodoro.suspend();
+	});
 
 	type Page = {
 		path: ResolvedPathname;

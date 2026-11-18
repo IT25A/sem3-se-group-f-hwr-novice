@@ -14,6 +14,9 @@
 	});
 	const percent = (done: number, total: number) =>
 		total > 0 ? Math.round((done / total) * 100) : 0;
+
+	const focus = (minutes: number) =>
+		minutes < 60 ? `${minutes} Min.` : `${Math.floor(minutes / 60)} Std. ${minutes % 60} Min.`;
 </script>
 
 <header>
@@ -73,6 +76,9 @@
 					Selbststudium: {number.format(item.selfStudy.done)} / {number.format(
 						item.selfStudy.total
 					)} LE
+				</li>
+				<li>
+					Fokuszeit (Pomodoro): {focus(item.focusMinutes)}
 				</li>
 			</ul>
 			<form method="POST" action="?/toggle" use:enhance>

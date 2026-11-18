@@ -67,11 +67,10 @@ export const load: PageServerLoad = async ({ locals }) => {
 	// Minutes of completed work sessions per module
 	const selfStudyMinutes = new Map<string, number>();
 	for (const session of sessions) {
-		if (!session.module_id || !session.ended_at) continue;
-		const minutes = (session.ended_at.getTime() - session.started_at.getTime()) / 60_000;
+		if (!session.module_id) continue;
 		selfStudyMinutes.set(
 			session.module_id,
-			(selfStudyMinutes.get(session.module_id) ?? 0) + minutes
+			(selfStudyMinutes.get(session.module_id) ?? 0) + session.planned_duration
 		);
 	}
 
@@ -94,6 +93,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		const own = upcoming.filter((lesson) => lesson.module_id === item.module.id);
 		return {
 			...item,
+			focusMinutes: selfStudyMinutes.get(item.module.id) ?? 0,
 			passed: passedIds.has(item.module.id),
 			next: own.find((lesson) => !EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null,
 			examAt: own.find((lesson) => EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null
