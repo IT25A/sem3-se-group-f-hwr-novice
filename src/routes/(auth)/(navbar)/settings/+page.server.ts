@@ -36,7 +36,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions = {
-	save: async ({ request, locals }) => {
+	course: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const value = formData.get('course')?.toString() ?? '';
 		const cohort = Number(formData.get('cohort'));

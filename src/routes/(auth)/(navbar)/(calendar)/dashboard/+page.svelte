@@ -17,7 +17,7 @@
 		{#if !data.hasCourse}
 			<p>
 				Du hast noch keinen Kurs gewählt, deshalb gibt es keinen Stundenplan.
-				<a href={resolve('/(auth)/(navbar)/course')}>Kurs auswählen</a>
+				<a href={resolve('/(auth)/(navbar)/settings')}>Kurs auswählen</a>
 			</p>
 		{/if}
 	</header>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
 	import { PHASE_NAMES, pomodoro } from '#lib/pomodoro.svelte.ts';
+	import { resolve } from '$app/paths';
 
 	let { data }: PageProps = $props();
 
@@ -72,6 +73,10 @@
 		{/if}
 	</div>
 	{#if pomodoro.error}<p class="error">{pomodoro.error}</p>{/if}
+
+	<p class="hint">
+		<a href={resolve('/(auth)/(navbar)/settings')}>Standardwerte ändern</a>
+	</p>
 </section>
 
 <section class="log">
@@ -93,58 +98,6 @@
 	{:else}
 		<p>Noch keine abgeschlossenen Fokuszeiten.</p>
 	{/if}
-</section>
-
-<section class="settings">
-	<h2>Einstellungen</h2>
-	<p>Die Dauern in Minuten. Änderungen sind nur möglich, solange kein Intervall läuft.</p>
-	<div class="fields">
-		<label>
-			Fokuszeit
-			<input
-				type="number"
-				min="1"
-				max="180"
-				bind:value={pomodoro.config.work}
-				onchange={() => pomodoro.applyConfig()}
-				disabled={pomodoro.status !== 'idle'}
-			/>
-		</label>
-		<label>
-			Kurzpause
-			<input
-				type="number"
-				min="1"
-				max="60"
-				bind:value={pomodoro.config.short}
-				onchange={() => pomodoro.applyConfig()}
-				disabled={pomodoro.status !== 'idle'}
-			/>
-		</label>
-		<label>
-			Langpause
-			<input
-				type="number"
-				min="1"
-				max="60"
-				bind:value={pomodoro.config.long}
-				onchange={() => pomodoro.applyConfig()}
-				disabled={pomodoro.status !== 'idle'}
-			/>
-		</label>
-		<label>
-			Langpause nach
-			<input
-				type="number"
-				min="2"
-				max="10"
-				bind:value={pomodoro.config.every}
-				onchange={() => pomodoro.applyConfig()}
-				disabled={pomodoro.status !== 'idle'}
-			/>
-			Fokuszeiten
-		</label>
-	</div>
 </section>
 
 <style>
@@ -206,15 +159,9 @@
 		margin-top: 1rem;
 	}
 
-	.fields {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		margin-top: 0.5rem;
-	}
-
-	input[type='number'] {
-		width: 5rem;
+	.hint a {
+		color: var(--hwr-red);
+		font-weight: 600;
 	}
 
 	.module {

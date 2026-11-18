@@ -42,8 +42,8 @@
 			display: 'Pomodoro'
 		},
 		{
-			path: '/course',
-			display: 'Kurs'
+			path: '/settings',
+			display: 'Einstellungen'
 		},
 		{
 			path: '/logout',
