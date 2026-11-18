@@ -98,7 +98,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			id: it.id,
 			editable: locals.userId == it.user_id,
 			calendarId: it.type == 'private' ? 'private' : 'public',
-			title: it.title,
+			title: (it.type == 'global' ? 'AStA: ' : '') + it.title,
 			location: it.location,
 			description: it.description ?? '',
 			start: it.start,
