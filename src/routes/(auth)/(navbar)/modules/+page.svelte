@@ -2,7 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 	const percent = (done: number, total: number) =>
@@ -66,9 +66,33 @@
 					{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
 				</button>
 			</form>
+			<form
+				method="POST"
+				action="?/remove"
+				use:enhance={({ cancel }) => {
+					if (!confirm(`Modul „${item.module.name}“ löschen?`)) cancel();
+				}}
+			>
+				<input type="hidden" name="module_id" value={item.module.id} />
+				<button type="submit">Löschen</button>
+			</form>
 		</section>
 	{/each}
 </div>
+<section class="add">
+	<h2>Modul anlegen</h2>
+	<form method="POST" action="?/create" use:enhance>
+		<label>Name <input name="name" required maxlength="100" /></label>
+		<label>Code (optional) <input name="code" maxlength="20" placeholder="IT1234" /></label>
+		<label>LP <input name="lp" type="number" min="0" max="30" required /></label>
+		<label>Präsenz in LE (optional) <input name="presence_le" type="number" min="0" /></label>
+		<label
+			>Selbststudium in LE (optional) <input name="self_study_le" type="number" min="0" /></label
+		>
+		<button type="submit">Anlegen</button>
+		{#if form?.error}<p class="error">{form.error}</p>{/if}
+	</form>
+</section>
 
 <style>
 	header {
@@ -141,5 +165,16 @@
 
 	form button {
 		margin-top: 0.5rem;
+	}
+
+	.add {
+		max-width: calc(40rem - 3rem);
+		margin-bottom: 2rem;
+	}
+
+	.add form {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 	}
 </style>
