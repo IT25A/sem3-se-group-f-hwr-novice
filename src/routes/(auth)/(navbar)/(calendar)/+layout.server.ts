@@ -96,7 +96,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 	const events = eventRows.map(({ event: it }) => {
 		return {
 			id: it.id,
-			editable: locals.userId == it.user_id,
+			editable: (locals.userId == it.user_id) || (it.type == "global" && locals.user.asta_member),
 			calendarId: it.type == 'private' ? 'private' : 'public',
 			title: (it.type == 'global' ? 'AStA: ' : '') + it.title,
 			location: it.location,
