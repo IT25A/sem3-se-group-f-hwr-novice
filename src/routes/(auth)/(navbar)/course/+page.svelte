@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { courseName } from '#lib/courses/label.ts';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -32,7 +33,7 @@
 			<option value="none">Kein Stundenplan (nur eigene Module)</option>
 			{#each data.options as option (option)}
 				<option value={option} selected={option === (form?.value ?? data.current?.value)}>
-					{option}
+					{courseName(option)}
 				</option>
 			{/each}
 		</select>

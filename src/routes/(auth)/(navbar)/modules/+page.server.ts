@@ -10,7 +10,7 @@ import {
 	courseTable,
 	lessonAssignmentTable
 } from '#lib/server/db/schema.ts';
-import { calculateProgress } from '#lib/server/modules/progress.ts';
+import { calculateProgress, EXAM_KINDS } from '#lib/server/modules/progress.ts';
 import {
 	CATALOGS,
 	catalogFor,
@@ -19,6 +19,7 @@ import {
 } from '#lib/server/modules/catalog.ts';
 import { assignmentsOf, linkLessons } from '#lib/server/modules/personal.ts';
 import { semesterOf } from '#lib/server/courses/semester.ts';
+import { courseName } from '#lib/courses/label.ts';
 
 const NO_MODULE = /wegezeit/i;
 
@@ -83,9 +84,21 @@ export const load: PageServerLoad = async ({ locals }) => {
 			.map((row) => row.module_id)
 	);
 
-	const progress = calculateProgress(modules, lessons, selfStudyMinutes, new Date()).map(
-		(item) => ({ ...item, passed: passedIds.has(item.module.id) })
-	);
+	const now = new Date();
+
+	const upcoming = lessons
+		.filter((lesson) => lesson.ends_at > now)
+		.sort((a, b) => a.starts_at.getTime() - b.starts_at.getTime());
+
+	const progress = calculateProgress(modules, lessons, selfStudyMinutes, now).map((item) => {
+		const own = upcoming.filter((lesson) => lesson.module_id === item.module.id);
+		return {
+			...item,
+			passed: passedIds.has(item.module.id),
+			next: own.find((lesson) => !EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null,
+			examAt: own.find((lesson) => EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null
+		};
+	});
 
 	const currentCodes = new Set(
 		course
@@ -110,7 +123,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const ects = { earned: earlier + semesterLp, earlier, total: TOTAL_ECTS };
 
 	// lessons without a module, grouped by title.
-	const now = new Date();
 	const groups = new Map<string, { title: string; count: number; next: Date | null }>();
 	for (const lesson of lessons) {
 		if (lesson.module_id || NO_MODULE.test(lesson.title)) continue;
@@ -128,7 +140,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		module: modules.find((module) => module.id === assignment.module_id)?.name ?? ''
 	}));
 
-	return { progress, ects, unassigned, manual };
+	const semester = course ? semesterOf(course.cohort) : 0;
+	const header = course
+		? `${courseName(`${course.study}/${course.course_part}`)}, Jg. ${course.cohort}${semester >= 1 && semester <= 6 ? ` · ${semester}. Semester` : ''}`
+		: null;
+
+	return { progress, ects, unassigned, manual, header };
 };
 
 // Reads a whole number from a form filed. Empty means 0, anything else invalid returns NaN.

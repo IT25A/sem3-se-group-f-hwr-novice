@@ -2,7 +2,7 @@ import type { Module, StoredLesson } from '../db/schema.ts';
 import { pauseMinutes } from '../lessons/parser.ts';
 
 const LE_MINUTES = 45;
-const EXAM_KINDS = ['Klausur', 'Prüfung'];
+export const EXAM_KINDS = ['Klausur', 'Prüfung'];
 
 const toLe = (minutes: number) => minutes / LE_MINUTES;
 

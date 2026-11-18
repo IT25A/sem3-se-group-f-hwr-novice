@@ -5,12 +5,20 @@
 	let { data, form }: PageProps = $props();
 
 	const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+	const dateTime = new Intl.DateTimeFormat('de-DE', {
+		weekday: 'short',
+		day: '2-digit',
+		month: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit'
+	});
 	const percent = (done: number, total: number) =>
 		total > 0 ? Math.round((done / total) * 100) : 0;
 </script>
 
 <header>
 	<h1>Module</h1>
+	{#if data.header}<p>{data.header}</p>{/if}
 	<p>Dein Fortschritt im Theorieteil dieses Semesters.</p>
 	<section class="overall">
 		<h2>Gesamtfortschritt</h2>
@@ -44,6 +52,11 @@
 					item.total
 				)} LE)
 			</p>
+			<p class="dates">
+				{#if item.next}Nächster Termin: {dateTime.format(item.next)}{/if}
+				{#if item.examAt}{item.next ? ' · ' : ''}Klausur: {dateTime.format(item.examAt)}{/if}
+				{#if !item.next && !item.exam}Keine anstehenden Termine{/if}
+			</p>
 
 			<ul>
 				<li>
@@ -51,7 +64,9 @@
 				</li>
 				{#if item.exam.total > 0}
 					<li>
-						Prüfung: {item.exam.taken ? 'abgelegt' : 'steht noch aus'} ({item.exam.total} LE)
+						Prüfung: {item.exam.taken ? 'abgelegt' : 'steht noch aus'} ({number.format(
+							item.exam.total
+						)} LE)
 					</li>
 				{/if}
 				<li>
@@ -91,7 +106,7 @@
 					? `, nächster am ${group.next.toLocaleDateString('de-DE')}`
 					: ''})
 				<select name="module_id" required>
-					<option value="" disabled selected>Module wählen</option>
+					<option value="" disabled selected>Modul wählen</option>
 					{#each data.progress as item (item.module.id)}
 						<option value={item.module.id}>{item.module.name}</option>
 					{/each}
@@ -183,6 +198,11 @@
 
 	progress {
 		width: 100%;
+	}
+
+	.dates {
+		font-size: 0.9em;
+		opacity: 0.8;
 	}
 
 	ul {
