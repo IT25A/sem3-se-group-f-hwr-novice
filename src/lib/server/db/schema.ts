@@ -86,6 +86,26 @@ export const moduleTable = sqliteTable(
 	(table) => [uniqueIndex('module_user_code').on(table.user_id, table.code)]
 );
 
+export type LessonAssignment = {
+	user_id: string;
+	title: string;
+	module_id: string;
+};
+
+export const lessonAssignmentTable = sqliteTable(
+	'lesson_assignment',
+	{
+		user_id: text('user_id')
+			.notNull()
+			.references(() => userTable.id, { onDelete: 'cascade' }),
+		title: text('title').notNull(),
+		module_id: text('module_id')
+			.notNull()
+			.references(() => moduleTable.id, { onDelete: 'cascade' })
+	},
+	(table) => [primaryKey({ columns: [table.user_id, table.title] })]
+);
+
 export type StoredLesson = {
 	id: string;
 	key: string;

@@ -7,7 +7,8 @@ import {
 	moduleTable,
 	pomodoroTable,
 	modulePassTable,
-	courseTable
+	courseTable,
+	lessonAssignmentTable
 } from '#lib/server/db/schema.ts';
 import { calculateProgress } from '#lib/server/modules/progress.ts';
 import {
@@ -16,8 +17,10 @@ import {
 	ECTS_PER_SEMESTER,
 	TOTAL_ECTS
 } from '#lib/server/modules/catalog.ts';
-import { linkLessons } from '#lib/server/modules/personal.ts';
+import { assignmentsOf, linkLessons } from '#lib/server/modules/personal.ts';
 import { semesterOf } from '#lib/server/courses/semester.ts';
+
+const NO_MODULE = /wegezeit/i;
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const modules = db
@@ -36,10 +39,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 		? ECTS_PER_SEMESTER * Math.min(Math.max(semesterOf(course.cohort) - 1, 0), 6)
 		: 0;
 
+	const assignments = assignmentsOf(locals.user.id);
+
 	const lessons = locals.user.course_id
 		? linkLessons(
 				db.select().from(lessonTable).where(eq(lessonTable.course_id, locals.user.course_id)).all(),
-				modules
+				modules,
+				assignments
 			)
 		: [];
 
@@ -103,7 +109,26 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.reduce((sum, item) => sum + item.module.lp, 0);
 	const ects = { earned: earlier + semesterLp, earlier, total: TOTAL_ECTS };
 
-	return { progress, ects };
+	// lessons without a module, grouped by title.
+	const now = new Date();
+	const groups = new Map<string, { title: string; count: number; next: Date | null }>();
+	for (const lesson of lessons) {
+		if (lesson.module_id || NO_MODULE.test(lesson.title)) continue;
+		const group = groups.get(lesson.title) ?? { title: lesson.title, count: 0, next: null };
+		group.count++;
+		if (lesson.starts_at > now && (!group.next || lesson.starts_at < group.next)) {
+			group.next = lesson.starts_at;
+		}
+		groups.set(lesson.title, group);
+	}
+	const unassigned = [...groups.values()].sort((a, b) => a.title.localeCompare(b.title));
+
+	const manual = assignments.map((assignment) => ({
+		title: assignment.title,
+		module: modules.find((module) => module.id === assignment.module_id)?.name ?? ''
+	}));
+
+	return { progress, ects, unassigned, manual };
 };
 
 // Reads a whole number from a form filed. Empty means 0, anything else invalid returns NaN.
@@ -113,6 +138,52 @@ function whole(value: FormDataEntryValue | null) {
 }
 
 export const actions = {
+	/* Assigns all lessons with a title to one of the user's modules. */
+	assign: async ({ request, locals }) => {
+		const formData = await request.formData();
+		const title = formData.get('title')?.toString() ?? '';
+		const module_id = formData.get('module_id')?.toString() ?? '';
+		const user_id = locals.user.id;
+
+		const found = db
+			.select()
+			.from(moduleTable)
+			.where(and(eq(moduleTable.id, module_id), eq(moduleTable.user_id, user_id)))
+			.get();
+		if (!found) return fail(400, { error: 'Unknown module' });
+
+		// title must belong to a lesson of the user's own course.
+		const lesson = locals.user.course_id
+			? db
+					.select()
+					.from(lessonTable)
+					.where(
+						and(eq(lessonTable.course_id, locals.user.course_id), eq(lessonTable.title, title))
+					)
+					.get()
+			: undefined;
+		if (!lesson) return fail(400, { error: 'Unknown lesson' });
+
+		db.insert(lessonAssignmentTable)
+			.values({ user_id, title, module_id })
+			.onConflictDoUpdate({
+				target: [lessonAssignmentTable.user_id, lessonAssignmentTable.title],
+				set: { module_id }
+			})
+			.run();
+	},
+	/* Removes a manual assignment */
+	unassign: async ({ request, locals }) => {
+		const title = (await request.formData()).get('title')?.toString() ?? '';
+		db.delete(lessonAssignmentTable)
+			.where(
+				and(
+					eq(lessonAssignmentTable.user_id, locals.user.id),
+					eq(lessonAssignmentTable.title, title)
+				)
+			)
+			.run();
+	},
 	/* Creates an own module. */
 	create: async ({ request, locals }) => {
 		const formData = await request.formData();

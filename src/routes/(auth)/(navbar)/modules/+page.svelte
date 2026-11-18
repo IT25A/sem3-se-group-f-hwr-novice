@@ -79,6 +79,41 @@
 		</section>
 	{/each}
 </div>
+{#if data.unassigned.length > 0}
+	<section class="unassigned">
+		<h2>Nicht zugeordnete Termine</h2>
+		<p>Diese Termine gehören noch zu keinem Modul und zählen deshalb nirgends mit.</p>
+		{#each data.unassigned as group (group.title)}
+			<form method="POST" action="?/assign" use:enhance>
+				<input type="hidden" name="title" value={group.title} />
+				<strong>{group.title}</strong>
+				({group.count} Termine{group.next
+					? `, nächster am ${group.next.toLocaleDateString('de-DE')}`
+					: ''})
+				<select name="module_id" required>
+					<option value="" disabled selected>Module wählen</option>
+					{#each data.progress as item (item.module.id)}
+						<option value={item.module.id}>{item.module.name}</option>
+					{/each}
+				</select>
+				<button type="submit">Zuordnen</button>
+			</form>
+		{/each}
+	</section>
+{/if}
+
+{#if data.manual.length > 0}
+	<section class="manual">
+		<h2>Manuelle Zuordnungen</h2>
+		{#each data.manual as rule (rule.title)}
+			<form method="POST" action="?/unassign" use:enhance>
+				<input type="hidden" name="title" value={rule.title} />
+				{rule.title} → {rule.module}
+				<button type="submit">Aufheben</button>
+			</form>
+		{/each}
+	</section>
+{/if}
 <section class="add">
 	<h2>Modul anlegen</h2>
 	<form method="POST" action="?/create" use:enhance>
@@ -167,7 +202,9 @@
 		margin-top: 0.5rem;
 	}
 
-	.add {
+	.add,
+	.unassigned,
+	.manual {
 		max-width: calc(40rem - 3rem);
 		margin-bottom: 2rem;
 	}

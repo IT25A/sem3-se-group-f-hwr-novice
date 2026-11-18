@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from './$types';
-import { linkLessons } from '#lib/server/modules/personal.ts';
+import { linkLessons, assignmentsOf } from '#lib/server/modules/personal.ts';
 import { syncCourse } from '#lib/server/lessons/sync.ts';
 import {
 	courseTable,
@@ -50,7 +50,8 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 					.where(eq(lessonTable.course_id, course.id))
 					.orderBy(asc(lessonTable.starts_at))
 					.all(),
-				modules
+				modules,
+				assignmentsOf(locals.user.id)
 			)
 		: [];
 
