@@ -19,7 +19,7 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./
 
 COPY --from=build /app/drizzle ./drizzle
-COPY --from=build /app/scripts/migrate.js ./scripts/migrate.js
+COPY --from=build /app/scripts ./scripts
 
 RUN mkdir -p /data && chown node:node /data
 
