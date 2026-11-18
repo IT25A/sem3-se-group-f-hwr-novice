@@ -1,101 +1,60 @@
-<div id="center">
-	<h1>Einloggen</h1>
+<script lang="ts">
+	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
+	import type { PageProps } from './$types';
 
-	<br />
+	let { form }: PageProps = $props();
 
-	<form method="POST">
-		<label for="username">Benutzername: </label>
+	let submitting = $state(false);
+	let password = $state('');
+</script>
 
-		<br />
+<svelte:head>
+	<title>Einloggen – HWR Novice</title>
+</svelte:head>
 
-		<input id="username" name="username" type="text" required />
+<h1>Einloggen</h1>
 
-		<br />
-		<br />
+<form
+	method="POST"
+	use:enhance={() => {
+		submitting = true;
+		return async ({ result, update }) => {
+			await update({ reset: false });
+			if (result.type === 'failure') password = '';
+			submitting = false;
+		};
+	}}
+>
+	{#if form?.error}
+		<p class="error" role="alert">{form.error}</p>
+	{/if}
+	<label>
+		Benutzername
+		<input
+			name="username"
+			type="text"
+			autocomplete="username"
+			required
+			value={form?.username ?? ''}
+		/>
+	</label>
+	<label>
+		Passwort
+		<input
+			name="password"
+			type="password"
+			autocomplete="current-password"
+			required
+			bind:value={password}
+		/>
+	</label>
 
-		<label for="password">Passwort: </label>
+	<button type="submit" disabled={submitting}>
+		{submitting ? 'Einloggen …' : 'Einloggen'}
+	</button>
+</form>
 
-		<br />
-
-		<input id="password" name="password" type="password" required />
-
-		<br />
-		<br />
-
-		<button type="submit">Einloggen</button>
-	</form>
-</div>
-
-<style>
-	#username {
-		background: white;
-
-		padding: 10px 18px;
-
-		border-radius: 40px;
-
-		box-shadow: var(--shadow);
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	#password {
-		background: white;
-
-		padding: 10px 18px;
-
-		border-radius: 40px;
-
-		box-shadow: var(--shadow);
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	h1 {
-		font-family: 'Cormorant Garamond', serif;
-
-		font-size: 4rem;
-
-		font-weight: 600;
-
-		margin-bottom: 0.4rem;
-	}
-
-	label {
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	button {
-		padding: 10px 10px 10px 10px;
-
-		border-radius: 40px;
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	#center {
-		justify-content: center;
-
-		align-items: center;
-
-		text-align: center;
-
-		padding: 120px 50px;
-	}
-</style>
+<p class="switch">
+	Noch kein Konto? <a href={resolve('/(login+register)/register')}>Jetzt registrieren</a>
+</p>

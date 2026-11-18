@@ -13,6 +13,7 @@
 	--max-width: 1200px;
 
 	--hwr-red: #d82425;
+	--hwr-red-darker: hsl(from var(--hwr-red) h s calc(l - 5));
 }
 
 body {

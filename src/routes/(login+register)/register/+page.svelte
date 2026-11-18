@@ -1,126 +1,81 @@
-<div id="center">
-	<h1>Registrieren</h1>
+<script lang="ts">
+	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
+	import type { PageProps } from './$types';
 
-	<br />
+	let { form }: PageProps = $props();
 
-	<form method="POST">
-		<label for="username">Benutzername: </label>
+	let submitting = $state(false);
+	let password = $state('');
+	let repetition = $state('');
+</script>
 
-		<br />
+<svelte:head>
+	<title>Registrieren – HWR Novice</title>
+</svelte:head>
 
-		<input id="username" name="username" type="text" minlength="3" maxlength="32" required />
+<h1>Registrieren</h1>
 
-		<br />
-		<br />
+<form
+	method="POST"
+	use:enhance={() => {
+		submitting = true;
+		return async ({ result, update }) => {
+			await update({ reset: false });
+			if (result.type === 'failure') {
+				password = '';
+				repetition = '';
+			}
+			submitting = false;
+		};
+	}}
+>
+	{#if form?.error}
+		<p class="error" role="alert">{form.error}</p>
+	{/if}
 
-		<label for="password">Passwort: </label>
+	<label>
+		Benutzername
+		<input
+			name="username"
+			type="text"
+			autocomplete="username"
+			minlength="3"
+			maxlength="32"
+			required
+			value={form?.username ?? ''}
+		/>
+	</label>
 
-		<br />
+	<label>
+		Passwort
+		<input
+			name="password"
+			type="password"
+			autocomplete="new-password"
+			minlength="8"
+			required
+			bind:value={password}
+		/>
+	</label>
 
-		<input id="password" name="password" type="password" minlength="8" required />
+	<label>
+		Passwort wiederholen
+		<input
+			name="repetition"
+			type="password"
+			autocomplete="new-password"
+			minlength="8"
+			required
+			bind:value={repetition}
+		/>
+	</label>
 
-		<br />
-		<br />
+	<button type="submit" disabled={submitting}>
+		{submitting ? 'Registrieren …' : 'Registrieren'}
+	</button>
+</form>
 
-		<label for="repetition">Passwort: </label>
-
-		<br />
-
-		<input id="repetition" name="repetition" type="password" minlength="8" required />
-
-		<br />
-		<br />
-
-		<button type="submit">Registrieren</button>
-	</form>
-</div>
-
-<style>
-	#username {
-		background: white;
-
-		padding: 10px 18px;
-
-		border-radius: 40px;
-
-		box-shadow: var(--shadow);
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	#password {
-		background: white;
-
-		padding: 10px 18px;
-
-		border-radius: 40px;
-
-		box-shadow: var(--shadow);
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	#repetition {
-		background: white;
-
-		padding: 10px 18px;
-
-		border-radius: 40px;
-
-		box-shadow: var(--shadow);
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	h1 {
-		font-family: 'Cormorant Garamond', serif;
-
-		font-size: 4rem;
-
-		font-weight: 600;
-
-		margin-bottom: 0.4rem;
-	}
-
-	label {
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	button {
-		padding: 10px 10px 10px 10px;
-
-		border-radius: 40px;
-
-		font-size: 1rem;
-
-		font-family: 'Inter', sans-serif;
-
-		line-height: 1.75;
-	}
-
-	#center {
-		justify-content: center;
-
-		align-items: center;
-
-		text-align: center;
-
-		padding: 120px 50px;
-	}
-</style>
+<p class="switch">
+	Schon registriert? <a href={resolve('/(login+register)/login')}>Zum Einloggen</a>
+</p>
