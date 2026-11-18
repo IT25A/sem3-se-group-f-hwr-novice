@@ -1,6 +1,16 @@
 <script lang="ts">
 	import type { ResolvedPathname } from '$app/types';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { PHASE_NAMES, pomodoro } from '#lib/pomodoro.svelte.ts';
+
+	onMount(() => pomodoro.init());
+
+	const title = $derived(
+		pomodoro.status === 'running'
+			? `${pomodoro.label} · ${PHASE_NAMES[pomodoro.phase]}`
+			: 'HWR Novice'
+	);
 
 	let { children } = $props();
 
@@ -24,6 +34,10 @@
 			display: 'Modulübersicht'
 		},
 		{
+			path: '/pomodoro',
+			display: 'Pomodoro'
+		},
+		{
 			path: '/course',
 			display: 'Kurs'
 		},
@@ -37,6 +51,10 @@
 	const activePage = $derived(page.url.pathname);
 </script>
 
+<svelte:head>
+	<title>{title}</title>
+</svelte:head>
+
 <div class="wrapper">
 	<nav>
 		<p>HWR Novice</p>
@@ -46,8 +64,11 @@
 					<a
 						class={activePage === page.path ? 'active' : ''}
 						href={page.path}
-						data-sveltekit-preload-data={page.preventPreload ? false : undefined}>{page.display}</a
+						data-sveltekit-preload-data={page.preventPreload ? false : undefined}
 					>
+						{page.display}{#if page.path === '/pomodoro' && pomodoro.status !== 'idle'}
+							{' '}· {pomodoro.label}{/if}
+					</a>
 				</li>
 			{/each}
 		</ul>
