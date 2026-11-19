@@ -239,6 +239,8 @@ export const actions = {
 		db.insert(moduleTable)
 			.values({ user_id: locals.user.id, code, name, lp, presence_le, self_study_le })
 			.run();
+
+		return { success: true };
 	},
 	/* Deletes an own module. Its pomodoro sessions are kept but lose their module association. */
 	remove: async ({ request, locals }) => {

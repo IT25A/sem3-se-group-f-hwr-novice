@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
+	import ModuleDialog from './ModuleDialog.svelte';
 
-	let { data, form }: PageProps = $props();
+	let { data }: PageProps = $props();
+
+	let moduleDialog = $state<ReturnType<typeof ModuleDialog>>();
 
 	const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 	const dateTime = new Intl.DateTimeFormat('de-DE', {
@@ -27,13 +30,18 @@
 
 <div class="page">
 	<h1>Module</h1>
-	{#if data.header}
-		<p class="pills">
-			<span class="pill">{data.header.course}</span>
-			<span class="pill">Studienbeginn {data.header.cohort}</span>
-			{#if data.header.semester}<span class="pill">Semester {data.header.semester}</span>{/if}
-		</p>
-	{/if}
+	<div class="toolbar">
+		{#if data.header}
+			<p class="pills">
+				<span class="pill">{data.header.course}</span>
+				<span class="pill">Studienbeginn {data.header.cohort}</span>
+				{#if data.header.semester}<span class="pill">Semester {data.header.semester}</span>{/if}
+			</p>
+		{/if}
+		<button type="button" class="primary" onclick={() => moduleDialog?.show()}>
+			Modul anlegen
+		</button>
+	</div>
 
 	<section class="panel overall">
 		<div class="overall-head">
@@ -51,84 +59,88 @@
 		{/if}
 	</section>
 
-	<div class="modules">
-		{#each data.progress as item (item.module.id)}
-			<article class="module" class:passed={item.passed}>
-				<p class="tags">
-					{#if item.module.code}<span class="pill">{item.module.code}</span>{/if}
-					<span class="pill">{item.module.lp} LP</span>
-					{#if item.passed}<span class="pill done">bestanden</span>{/if}
-				</p>
-				<h2>{item.module.name}</h2>
+	{#if data.progress.length > 0}
+		<div class="modules">
+			{#each data.progress as item (item.module.id)}
+				<article class="module" class:passed={item.passed}>
+					<p class="tags">
+						{#if item.module.code}<span class="pill">{item.module.code}</span>{/if}
+						<span class="pill">{item.module.lp} LP</span>
+						{#if item.passed}<span class="pill done">bestanden</span>{/if}
+					</p>
+					<h2>{item.module.name}</h2>
 
-				{@render bar(percent(item.done, item.total))}
-				<p class="progress-text">
-					<span>{number.format(item.done)} von {number.format(item.total)} LE</span>
-					<strong>{percent(item.done, item.total)}&nbsp;%</strong>
-				</p>
+					{@render bar(percent(item.done, item.total))}
+					<p class="progress-text">
+						<span>{number.format(item.done)} von {number.format(item.total)} LE</span>
+						<strong>{percent(item.done, item.total)}&nbsp;%</strong>
+					</p>
 
-				<dl class="facts">
-					<div>
-						<dt>Präsenz</dt>
-						<dd>{number.format(item.presence.done)} / {number.format(item.presence.total)} LE</dd>
-					</div>
-					<div>
-						<dt>Selbststudium</dt>
-						<dd>{number.format(item.selfStudy.done)} / {number.format(item.selfStudy.total)} LE</dd>
-					</div>
-					{#if item.exam.total > 0}
+					<dl class="facts">
 						<div>
-							<dt>Prüfung</dt>
-							<dd class:ok={item.exam.taken}>
-								{item.exam.taken ? 'Abgelegt' : 'Ausstehend'} ({number.format(item.exam.total)} LE)
+							<dt>Präsenz</dt>
+							<dd>{number.format(item.presence.done)} / {number.format(item.presence.total)} LE</dd>
+						</div>
+						<div>
+							<dt>Selbststudium</dt>
+							<dd>
+								{number.format(item.selfStudy.done)} / {number.format(item.selfStudy.total)} LE
 							</dd>
 						</div>
-					{/if}
-					<div>
-						<dt>Fokuszeit</dt>
-						<dd>{focus(item.focusMinutes)}</dd>
+						{#if item.exam.total > 0}
+							<div>
+								<dt>Prüfung</dt>
+								<dd class:ok={item.exam.taken}>
+									{item.exam.taken ? 'Abgelegt' : 'Ausstehend'} ({number.format(item.exam.total)} LE)
+								</dd>
+							</div>
+						{/if}
+						<div>
+							<dt>Fokuszeit</dt>
+							<dd>{focus(item.focusMinutes)}</dd>
+						</div>
+					</dl>
+
+					<dl class="facts">
+						{#if item.next}
+							<div>
+								<dt>Nächster Termin</dt>
+								<dd>{dateTime.format(item.next)}</dd>
+							</div>
+						{/if}
+						{#if item.examAt}
+							<div>
+								<dt>Klausur</dt>
+								<dd>{dateTime.format(item.examAt)}</dd>
+							</div>
+						{/if}
+						{#if !item.next && !item.examAt}
+							<p class="none">Keine anstehenden Termine</p>
+						{/if}
+					</dl>
+
+					<div class="actions">
+						<form method="POST" action="?/toggle" use:enhance>
+							<input type="hidden" name="module_id" value={item.module.id} />
+							<button type="submit" class="secondary">
+								{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
+							</button>
+						</form>
+						<form
+							method="POST"
+							action="?/remove"
+							use:enhance={({ cancel }) => {
+								if (!confirm(`Modul „${item.module.name}“ löschen?`)) cancel();
+							}}
+						>
+							<input type="hidden" name="module_id" value={item.module.id} />
+							<button type="submit" class="danger">Löschen</button>
+						</form>
 					</div>
-				</dl>
-
-				<dl class="facts">
-					{#if item.next}
-						<div>
-							<dt>Nächster Termin</dt>
-							<dd>{dateTime.format(item.next)}</dd>
-						</div>
-					{/if}
-					{#if item.examAt}
-						<div>
-							<dt>Klausur</dt>
-							<dd>{dateTime.format(item.examAt)}</dd>
-						</div>
-					{/if}
-					{#if !item.next && !item.examAt}
-						<p class="none">Keine anstehenden Termine</p>
-					{/if}
-				</dl>
-
-				<div class="actions">
-					<form method="POST" action="?/toggle" use:enhance>
-						<input type="hidden" name="module_id" value={item.module.id} />
-						<button type="submit" class="secondary">
-							{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
-						</button>
-					</form>
-					<form
-						method="POST"
-						action="?/remove"
-						use:enhance={({ cancel }) => {
-							if (!confirm(`Modul „${item.module.name}“ löschen?`)) cancel();
-						}}
-					>
-						<input type="hidden" name="module_id" value={item.module.id} />
-						<button type="submit" class="danger">Löschen</button>
-					</form>
-				</div>
-			</article>
-		{/each}
-	</div>
+				</article>
+			{/each}
+		</div>
+	{/if}
 
 	{#if data.unassigned.length > 0}
 		<section class="panel">
@@ -180,23 +192,9 @@
 			</ul>
 		</details>
 	{/if}
-
-	<section class="panel add">
-		<h2>Modul anlegen</h2>
-		<form method="POST" action="?/create" use:enhance>
-			<label>Name <input name="name" required maxlength="100" /></label>
-			<label>Code (optional) <input name="code" maxlength="20" placeholder="IT1234" /></label>
-			<label>LP <input name="lp" type="number" min="0" max="30" required /></label>
-			<label>Präsenz in LE (optional) <input name="presence_le" type="number" min="0" /></label>
-			<label>
-				Selbststudium in LE (optional)
-				<input name="self_study_le" type="number" min="0" />
-			</label>
-			{#if form?.error}<p class="error">{form.error}</p>{/if}
-			<button type="submit" class="primary">Anlegen</button>
-		</form>
-	</section>
 </div>
+
+<ModuleDialog bind:this={moduleDialog} />
 
 <style>
 	.page {
@@ -210,6 +208,18 @@
 		font-weight: 600;
 		margin: 0 0 0.4rem 0;
 		padding-top: 2.5rem;
+	}
+
+	.toolbar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem 1rem;
+		margin: 0.75rem 0 1.5rem;
+	}
+
+	.toolbar .primary {
+		margin-left: auto;
 	}
 
 	h2 {
@@ -231,7 +241,7 @@
 	}
 
 	.pills {
-		margin: 0.75rem 0 1.5rem;
+		margin: 0;
 	}
 
 	.pill {
@@ -424,22 +434,6 @@
 	}
 
 	/* Form, buttons */
-	.add form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-		max-width: 30rem;
-		margin-top: 0.75rem;
-	}
-
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.35rem;
-		font-size: 0.95rem;
-		font-weight: 600;
-	}
-
 	select,
 	input {
 		padding: 0.55rem 0.8rem;
@@ -466,7 +460,6 @@
 	}
 
 	.primary {
-		align-self: flex-start;
 		border: 0;
 		background-color: var(--hwr-red);
 		color: white;
@@ -496,13 +489,5 @@
 
 	.danger:hover {
 		color: var(--hwr-red);
-	}
-
-	.error {
-		padding: 0.75rem 1rem;
-		border: 1px solid var(--hwr-red);
-		border-radius: 0.5rem;
-		background-color: #fdecec;
-		color: #8f1a1b;
 	}
 </style>
