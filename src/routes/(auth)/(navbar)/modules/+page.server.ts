@@ -142,7 +142,11 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	const semester = course ? semesterOf(course.cohort) : 0;
 	const header = course
-		? `${courseName(`${course.study}/${course.course_part}`)}, Jg. ${course.cohort}${semester >= 1 && semester <= 6 ? ` · ${semester}. Semester` : ''}`
+		? {
+				course: courseName(`${course.study}/${course.course_part}`),
+				cohort: course.cohort,
+				semester: semester >= 1 && semester <= 6 ? semester : null
+			}
 		: null;
 
 	return { progress, ects, unassigned, manual, header };
