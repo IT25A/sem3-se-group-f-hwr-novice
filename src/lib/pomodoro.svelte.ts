@@ -41,6 +41,8 @@ class Pomodoro {
 	finished = $state<Phase | null>(null);
 	// The module the next (or running) work interval is credited to.
 	moduleId = $state<string | null>(null);
+	// Minutes chosen for the next work interval, or null for the default from the settings.
+	nextWork = $state<number | null>(null);
 	// Set when the server could not be reached.
 	error = $state('');
 
@@ -67,6 +69,10 @@ class Pomodoro {
 		return `${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 	}
 
+	get workMinutes() {
+		return this.nextWork ?? this.config.work;
+	}
+
 	// Share of the current interval that is over, from 0 to 1.
 	get progress() {
 		const total = this.duration(this.phase);
@@ -79,7 +85,8 @@ class Pomodoro {
 	}
 
 	duration(phase: Phase) {
-		return this.config[phase] * 60_000;
+		const minutes = phase === 'work' ? this.workMinutes : this.config[phase];
+		return minutes * 60_000;
 	}
 
 	// Loads the saved settings and state. Call once in the browser.
@@ -94,6 +101,7 @@ class Pomodoro {
 		this.cycle = 0;
 		this.finished = null;
 		this.moduleId = null;
+		this.nextWork = null;
 		this.error = '';
 		this.sessionId = null;
 		this.session = null;
@@ -122,10 +130,12 @@ class Pomodoro {
 		endsAt: number;
 		left: number;
 		cycle: number;
+		nextWork?: number | null;
 		sessionId?: string | null;
 	}) {
 		if (!(saved.phase in PHASE_NAMES)) return;
 		this.phase = saved.phase;
+		this.nextWork = saved.nextWork == null ? null : clamp(saved.nextWork, 1, 180, this.config.work);
 		this.cycle = clamp(saved.cycle, 0, 100, 0);
 		this.left = clamp(saved.left, 0, this.duration(saved.phase), this.duration(saved.phase));
 
@@ -201,6 +211,17 @@ class Pomodoro {
 		}
 	}
 
+	// Chooses the length of the next work interval for this time only.
+	setNext(minutes: number | null) {
+		if (this.moduleLocked) return;
+		this.nextWork =
+			minutes === null || minutes === this.config.work
+				? null
+				: clamp(minutes, 1, 180, this.config.work);
+		if (this.phase === 'work') this.left = this.duration('work');
+		this.save();
+	}
+
 	// Remembers the chosen module.
 	saveModule() {
 		try {
@@ -219,6 +240,7 @@ class Pomodoro {
 
 		if (done === 'work') {
 			void this.endSession('complete');
+			this.nextWork = null;
 			this.cycle++;
 			this.phase = this.cycle >= this.config.every ? 'long' : 'short';
 		} else {
@@ -237,7 +259,7 @@ class Pomodoro {
 		const session = this.send({
 			action: 'start',
 			module_id: this.moduleId,
-			minutes: this.config.work
+			minutes: this.workMinutes
 		}).then((result) => result?.id ?? null);
 
 		this.session = session;
@@ -307,6 +329,7 @@ class Pomodoro {
 					endsAt: this.endsAt,
 					left: this.left,
 					cycle: this.cycle,
+					nextWork: this.nextWork,
 					sessionId: this.sessionId
 				})
 			);

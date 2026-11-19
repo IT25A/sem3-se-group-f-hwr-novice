@@ -18,12 +18,12 @@ export const load: PageServerLoad = async ({ locals }) => {
 		eq(pomodoroTable.status, 'completed')
 	);
 
-	const recent = db
+	const history = db
 		.select()
 		.from(pomodoroTable)
 		.where(completed)
 		.orderBy(desc(pomodoroTable.ended_at))
-		.limit(10)
+		.limit(50)
 		.all();
 
 	const startOfDay = new Date();
@@ -40,7 +40,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 			count: today.length,
 			minutes: today.reduce((sum, session) => sum + session.planned_duration, 0)
 		},
-		recent: recent.map((session) => ({
+		history: history.map((session) => ({
 			id: session.id,
 			ended_at: session.ended_at,
 			minutes: session.planned_duration,
