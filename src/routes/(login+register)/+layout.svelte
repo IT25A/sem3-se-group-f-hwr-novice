@@ -5,54 +5,47 @@
 </script>
 
 <div class="page">
-	<aside>
-		<a class="brand" href={resolve('/')}>HWR Novice</a>
-		<p>Das Zeitmanagementtool für HWR Student*innen und Noviz*innen.</p>
-	</aside>
 	<main>
+		<a class="brand" href={resolve('/')}>HWR Novice</a>
 		<div class="card">
 			{@render children()}
 		</div>
+		<p class="tagline">Das Zeitmanagementtool für HWR Student*innen und&nbsp;Noviz*innen.</p>
 	</main>
 </div>
 
 <style>
 	.page {
-		display: flex;
-		min-height: 100dvh;
+		background-color: var(--background);
 		font-family: 'Inter', sans-serif;
 	}
 
-	aside {
+	main {
 		box-sizing: border-box;
-		width: 30%;
-		min-width: 18rem;
-		padding: 5rem 2.5rem;
-		background-color: var(--hwr-red);
-		color: var(--background);
+		min-height: 100dvh;
+		display: grid;
+		grid-template-rows: 1fr auto 1.5fr;
+		justify-items: center;
+		padding: 2rem;
 	}
 
 	.brand {
-		display: block;
+		align-self: end;
+		margin-bottom: 1.5rem;
 		font-family: 'Cormorant Garamond', serif;
 		font-size: 3.5rem;
 		line-height: 1.1;
-		color: inherit;
+		color: var(--hwr-red);
 		text-decoration: none;
 	}
 
-	aside p {
-		margin: 1.5rem 0 0;
-		font-size: 1.1rem;
-		line-height: 1.75;
-	}
-
-	main {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem;
+	.tagline {
+		align-self: start;
+		max-width: 26rem;
+		margin: 1.25rem 0 0;
+		text-align: center;
+		line-height: 1.6;
+		color: var(--secondary);
 	}
 
 	.card {
@@ -66,10 +59,11 @@
 
 	/* Styles for both forms (login & register) */
 	.card :global(h1) {
-		margin: 0 0 1.25rem;
+		margin: 0 0 1.5rem;
 		font-family: 'Cormorant Garamond', serif;
-		font-size: 3rem;
+		font-size: 2.2rem;
 		font-weight: 600;
+		text-align: center;
 	}
 
 	.card :global(form) {
@@ -138,29 +132,5 @@
 	.card :global(.switch a) {
 		color: var(--hwr-red);
 		font-weight: 600;
-	}
-
-	@media (max-width: 48rem) {
-		.page {
-			flex-direction: column;
-		}
-
-		aside {
-			width: auto;
-			min-width: 0;
-			padding: 1.25rem 1.5rem;
-		}
-
-		.brand {
-			font-size: 2.5rem;
-		}
-
-		aside p {
-			display: none;
-		}
-
-		main {
-			align-items: flex-start;
-		}
 	}
 </style>
