@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 	import ModuleDialog from './ModuleDialog.svelte';
 	import AssignDialog from './AssignDialog.svelte';
@@ -152,6 +153,20 @@
 				</article>
 			{/each}
 		</div>
+	{:else}
+		<section class="panel empty">
+			<h2>Noch keine Module</h2>
+			{#if data.header}
+				<p>Du hast aktuell keine Module. Lege sie mit „Modul anlegen“ selbst an.</p>
+			{:else}
+				<p>
+					Du hast noch keinen Kurs gewählt.
+					<a href={resolve('/(auth)/(navbar)/settings')}>Wähle ihn in den Einstellungen</a>, um
+					deinen Stundenplan einzubinden. Bei einigen Kursen werden die Module deines Semesters dann
+					automatisch angelegt, sonst legst du sie selbst an.
+				</p>
+			{/if}
+		</section>
 	{/if}
 </div>
 
@@ -253,6 +268,21 @@
 		margin-top: 0.5rem;
 		font-size: 0.85rem;
 		color: var(--secondary);
+	}
+
+	.empty {
+		text-align: center;
+	}
+
+	.empty p {
+		margin-top: 0.5rem;
+		color: var(--secondary);
+		text-wrap: balance;
+	}
+
+	.empty a {
+		color: var(--hwr-red);
+		font-weight: 600;
 	}
 
 	/* Progress bar */
