@@ -19,3 +19,12 @@
 body {
 	margin: 0;
 }
+
+/* iOS Safari zooms into fields with a font size below 16px */
+@media (pointer: coarse) {
+	input,
+	select,
+	textarea {
+		font-size: 16px !important;
+	}
+}
