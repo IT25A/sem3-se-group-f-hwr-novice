@@ -152,7 +152,10 @@
 							<input type="hidden" name="module_id" value={item.module.id} />
 							<button type="submit" class="secondary" disabled={toggling}>
 								<Busy pending={toggling}>
-									{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
+									<span class="labels">
+										<span class:invisible={!item.passed}>Markierung entfernen</span>
+										<span class:invisible={item.passed}>Als bestanden markieren</span>
+									</span>
 								</Busy>
 							</button>
 						</form>
@@ -487,5 +490,18 @@
 
 	.danger:hover {
 		color: var(--hwr-red);
+	}
+
+	.labels {
+		display: inline-grid;
+		justify-items: center;
+	}
+
+	.labels span {
+		grid-area: 1 / 1;
+	}
+
+	.invisible {
+		visibility: hidden;
 	}
 </style>
