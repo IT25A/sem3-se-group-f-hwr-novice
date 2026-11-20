@@ -63,7 +63,7 @@
 	.page {
 		display: flex;
 		flex-direction: column;
-		height: 100dvh;
+		height: calc(100dvh - var(--topbar));
 	}
 
 	h1 {

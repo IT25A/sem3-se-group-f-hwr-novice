@@ -53,14 +53,56 @@
 	];
 
 	const activePage = $derived(page.url.pathname);
+
+	let open = $state(false);
+	const close = () => (open = false);
 </script>
 
 <svelte:head>
 	<title>{title}</title>
 </svelte:head>
 
+<svelte:window onkeydown={(event) => event.key === 'Escape' && close()} />
+
 <div class="wrapper">
-	<nav>
+	<header class="topbar">
+		<button
+			type="button"
+			class="menu"
+			aria-label={open ? 'Menü schließen' : 'Menü öffnen'}
+			aria-expanded={open}
+			aria-controls="menu"
+			onclick={() => (open = !open)}
+		>
+			<svg
+				viewBox="0 0 24 24"
+				width="24"
+				height="24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				aria-hidden="true"
+			>
+				{#if open}
+					<path d="M6 6l12 12M18 6L6 18" />
+				{:else}
+					<path d="M4 7h16M4 12h16M4 17h16" />
+				{/if}
+			</svg>
+		</button>
+		<span class="brand">HWR Novice</span>
+		{#if pomodoro.status !== 'idle'}
+			<span class="timer">{pomodoro.label}</span>
+		{/if}
+	</header>
+
+	{#if open}
+		<button type="button" class="backdrop" tabindex="-1" aria-label="Menü schließen" onclick={close}
+		></button>
+	{/if}
+
+	<nav id="menu" class:open>
 		<p>HWR Novice</p>
 		<ul>
 			{#each pages as page (page.path)}
@@ -68,6 +110,7 @@
 					<a
 						class={activePage === page.path ? 'active' : ''}
 						href={page.path}
+						onclick={close}
 						data-sveltekit-preload-data={page.preventPreload ? false : undefined}
 					>
 						{page.display}{#if page.path === '/pomodoro' && pomodoro.status !== 'idle'}
@@ -106,7 +149,7 @@
 	main {
 		width: 85%;
 		padding: 0 5rem;
-		max-height: 100dvh;
+		max-height: calc(100dvh - var(--topbar));
 		overflow-y: auto;
 		box-sizing: border-box;
 	}
@@ -149,9 +192,107 @@
 
 	.wrapper {
 		display: flex;
+		--topbar: 0rem;
 	}
 
 	* {
 		font-family: 'Inter', sans-serif;
+	}
+
+	.topbar,
+	.backdrop {
+		display: none;
+	}
+
+	@media (max-width: 70rem) {
+		.wrapper {
+			flex-direction: column;
+			--topbar: 3.5rem;
+		}
+
+		.topbar {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			position: relative;
+			z-index: 30;
+			flex-shrink: 0;
+			height: var(--topbar);
+			padding: 0 0.75rem;
+			box-sizing: border-box;
+			background-color: var(--hwr-red);
+			color: var(--background);
+		}
+
+		.menu {
+			display: grid;
+			place-items: center;
+			width: 2.5rem;
+			height: 2.5rem;
+			border: 0;
+			border-radius: 0.5rem;
+			background: none;
+			color: inherit;
+			cursor: pointer;
+		}
+
+		.menu:hover {
+			background-color: color-mix(in srgb, white 20%, transparent);
+		}
+
+		.brand {
+			font-family: 'Cormorant Garamond', serif;
+			font-size: 1.9rem;
+			font-weight: 600;
+		}
+
+		.timer {
+			margin-left: auto;
+			font-weight: 700;
+			font-variant-numeric: tabular-nums;
+		}
+
+		/* The menu slides in below the bar; closed, it is hidden for keyboard and screen readers too */
+		nav {
+			position: fixed;
+			top: 3.5rem;
+			bottom: 0;
+			left: 0;
+			z-index: 20;
+			width: min(18rem, 85vw);
+			min-width: 0;
+			height: auto;
+			padding: 1.5rem 1rem;
+			overflow-y: auto;
+			transform: translateX(-100%);
+			visibility: hidden;
+			transition:
+				transform 0.25s ease,
+				visibility 0s 0.25s;
+		}
+
+		nav.open {
+			transform: none;
+			visibility: visible;
+			transition: transform 0.25s ease;
+		}
+
+		nav p {
+			display: none;
+		}
+
+		.backdrop {
+			display: block;
+			position: fixed;
+			inset: var(--topbar) 0 0 0;
+			z-index: 10;
+			border: 0;
+			background-color: rgb(0 0 0 / 0.4);
+		}
+
+		main {
+			width: 100%;
+			padding: 0 1rem;
+		}
 	}
 </style>
