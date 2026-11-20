@@ -15,19 +15,42 @@
 
 	const titleId = $props.id();
 	let dialog = $state<HTMLDialogElement>();
+	let closing = $state(false);
+	let timer: ReturnType<typeof setTimeout>;
 
 	// Opens the dialog.
 	export function show() {
+		clearTimeout(timer);
+		closing = false;
 		dialog?.showModal();
 	}
 
-	// Closes the dialog.
+	// Plays the closing animation and then closes the dialog.
 	export function close() {
-		dialog?.close();
+		if (!dialog?.open || closing) return;
+		closing = true;
+		timer = setTimeout(finish, 400); // safety net, normally animationend comes first
+	}
+
+	function finish() {
+		clearTimeout(timer);
+		closing = false;
+		if (dialog?.open) dialog.close();
 	}
 </script>
 
-<dialog bind:this={dialog} {onclose} aria-labelledby={titleId} style:--width={width}>
+<dialog
+	bind:this={dialog}
+	class:closing
+	{onclose}
+	aria-labelledby={titleId}
+	style:--width={width}
+	oncancel={(event) => {
+		event.preventDefault(); // Escape: close with the animation
+		close();
+	}}
+	onanimationend={(event) => event.target === dialog && closing && finish()}
+>
 	<div class="content">
 		<h2 id={titleId}>{title}</h2>
 		{@render children()}
@@ -46,6 +69,57 @@
 
 	dialog::backdrop {
 		background-color: rgb(0 0 0 / 0.45);
+	}
+
+	dialog[open] {
+		animation: pop-in 0.2s ease;
+	}
+
+	dialog[open]::backdrop {
+		animation: fade-in 0.2s ease;
+	}
+
+	dialog.closing {
+		animation: pop-out 0.15s ease forwards;
+	}
+
+	dialog.closing::backdrop {
+		animation: fade-out 0.15s ease forwards;
+	}
+
+	@keyframes pop-in {
+		from {
+			opacity: 0;
+			transform: translateY(0.75rem) scale(0.98);
+		}
+	}
+
+	@keyframes pop-out {
+		to {
+			opacity: 0;
+			transform: translateY(0.75rem) scale(0.98);
+		}
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes fade-out {
+		to {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		dialog[open],
+		dialog.closing,
+		dialog[open]::backdrop,
+		dialog.closing::backdrop {
+			animation-duration: 0.01s;
+		}
 	}
 
 	.content {

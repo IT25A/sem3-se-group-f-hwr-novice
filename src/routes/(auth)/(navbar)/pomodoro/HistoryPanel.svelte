@@ -5,10 +5,27 @@
 	let { sessions }: { sessions: Session[] } = $props();
 
 	let dialog = $state<HTMLDialogElement>();
+	let closing = $state(false);
+	let timer: ReturnType<typeof setTimeout>;
 
 	// Opens the panel.
 	export function show() {
+		clearTimeout(timer);
+		closing = false;
 		dialog?.showModal();
+	}
+
+	// Slides the panel out and then closes it.
+	function close() {
+		if (!dialog?.open || closing) return;
+		closing = true;
+		timer = setTimeout(finish, 400); // safety net, normally animationend comes first
+	}
+
+	function finish() {
+		clearTimeout(timer);
+		closing = false;
+		if (dialog?.open) dialog.close();
 	}
 
 	const time = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -48,12 +65,18 @@
 
 <dialog
 	bind:this={dialog}
+	class:closing
 	aria-labelledby="history-title"
-	onclick={(event) => event.target === dialog && dialog?.close()}
+	onclick={(event) => event.target === dialog && close()}
+	oncancel={(event) => {
+		event.preventDefault(); // Escape: close with the animcation
+		close();
+	}}
+	onanimationend={(event) => event.target === dialog && closing && finish()}
 >
 	<header>
 		<h2 id="history-title">Verlauf</h2>
-		<button type="button" onclick={() => dialog?.close()}>Schließen</button>
+		<button type="button" onclick={close}>Schließen</button>
 	</header>
 
 	<div class="list">
@@ -98,16 +121,55 @@
 	dialog[open] {
 		display: flex;
 		flex-direction: column;
-		animation: slide-in 0.2s ease-out;
+		animation: slide-in 0.25s ease-out;
 	}
 
 	dialog::backdrop {
 		background-color: rgb(0 0 0 / 0.35);
 	}
 
+	dialog[open]::backdrop {
+		animation: fade-in 0.25s ease;
+	}
+
+	dialog.closing {
+		animation: slide-out 0.2s ease-in forwards;
+	}
+
+	dialog.closing::backdrop {
+		animation: fade-out 0.2s ease forwards;
+	}
+
 	@keyframes slide-in {
 		from {
 			transform: translateX(100%);
+		}
+	}
+
+	@keyframes slide-out {
+		to {
+			transform: translateX(100%);
+		}
+	}
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+	}
+
+	@keyframes fade-out {
+		to {
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		dialog[open],
+		dialog.closing,
+		dialog[open]::backdrop,
+		dialog.closing::backdrop {
+			animation-duration: 0.01s;
 		}
 	}
 
