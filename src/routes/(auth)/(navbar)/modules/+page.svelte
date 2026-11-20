@@ -2,10 +2,12 @@
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 	import ModuleDialog from './ModuleDialog.svelte';
+	import AssignDialog from './AssignDialog.svelte';
 
 	let { data }: PageProps = $props();
 
 	let moduleDialog = $state<ReturnType<typeof ModuleDialog>>();
+	let assignDialog = $state<ReturnType<typeof AssignDialog>>();
 
 	const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 	const dateTime = new Intl.DateTimeFormat('de-DE', {
@@ -38,9 +40,19 @@
 				{#if data.header.semester}<span class="pill">Semester {data.header.semester}</span>{/if}
 			</p>
 		{/if}
-		<button type="button" class="primary" onclick={() => moduleDialog?.show()}>
-			Modul anlegen
-		</button>
+		<div class="toolbar-actions">
+			{#if data.header}
+				<button type="button" class="secondary" onclick={() => assignDialog?.show()}>
+					Termine zuordnen
+					{#if data.unassigned.length > 0}
+						<span class="count">{data.unassigned.length}</span>
+					{/if}
+				</button>
+			{/if}
+			<button type="button" class="primary" onclick={() => moduleDialog?.show()}>
+				Modul anlegen
+			</button>
+		</div>
 	</div>
 
 	<section class="panel overall">
@@ -141,60 +153,15 @@
 			{/each}
 		</div>
 	{/if}
-
-	{#if data.unassigned.length > 0}
-		<section class="panel">
-			<h2>Nicht zugeordnete Termine</h2>
-			<p class="note">
-				Diese Termine gehören noch zu keinem Modul und zählen deshalb nirgends mit.
-			</p>
-			<ul class="rows">
-				{#each data.unassigned as group (group.title)}
-					<li>
-						<form method="POST" action="?/assign" use:enhance>
-							<input type="hidden" name="title" value={group.title} />
-							<span class="info">
-								<strong>{group.title}</strong>
-								<small>
-									{group.count}
-									{group.count === 1 ? 'Termin' : 'Termine'}{group.next
-										? `, nächster am ${group.next.toLocaleDateString('de-DE')}`
-										: ''}
-								</small>
-							</span>
-							<select name="module_id" required aria-label="Modul für {group.title}">
-								<option value="" disabled selected>Modul wählen</option>
-								{#each data.progress as item (item.module.id)}
-									<option value={item.module.id}>{item.module.name}</option>
-								{/each}
-							</select>
-							<button type="submit" class="secondary">Zuordnen</button>
-						</form>
-					</li>
-				{/each}
-			</ul>
-		</section>
-	{/if}
-
-	{#if data.manual.length > 0}
-		<details class="panel">
-			<summary>Manuelle Zuordnungen ({data.manual.length})</summary>
-			<ul class="rows">
-				{#each data.manual as rule (rule.title)}
-					<li>
-						<form method="POST" action="?/unassign" use:enhance>
-							<input type="hidden" name="title" value={rule.title} />
-							<span class="info">{rule.title} → {rule.module}</span>
-							<button type="submit" class="secondary">Aufheben</button>
-						</form>
-					</li>
-				{/each}
-			</ul>
-		</details>
-	{/if}
 </div>
 
 <ModuleDialog bind:this={moduleDialog} />
+<AssignDialog
+	bind:this={assignDialog}
+	unassigned={data.unassigned}
+	manual={data.manual}
+	modules={data.progress.map((item) => item.module)}
+/>
 
 <style>
 	.page {
@@ -218,8 +185,19 @@
 		margin: 0.75rem 0 1.5rem;
 	}
 
-	.toolbar .primary {
+	.toolbar-actions {
+		display: flex;
+		gap: 0.5rem;
 		margin-left: auto;
+	}
+
+	.count {
+		margin-left: 0.5rem;
+		padding: 0.05rem 0.5rem;
+		border-radius: 999px;
+		background-color: var(--hwr-red);
+		color: white;
+		font-size: 0.8rem;
 	}
 
 	h2 {
@@ -399,42 +377,7 @@
 		padding-top: 1rem;
 	}
 
-	/* Rows (unassigned, manual) */
-	.rows {
-		margin: 0.75rem 0 0;
-		padding: 0;
-		list-style: none;
-	}
-
-	.rows li {
-		padding: 0.75rem 0;
-		border-top: 1px solid var(--border);
-	}
-
-	.rows form {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 0.75rem;
-	}
-
-	.info {
-		flex: 1 1 14rem;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.info small {
-		color: var(--secondary);
-	}
-
-	summary {
-		cursor: pointer;
-		font-weight: 700;
-	}
-
 	/* Form, buttons */
-	select,
 	input {
 		padding: 0.55rem 0.8rem;
 		border: 1px solid var(--border);
@@ -442,13 +385,6 @@
 		background-color: white;
 		font: inherit;
 		font-weight: 400;
-	}
-
-	select:focus-visible,
-	input:focus-visible {
-		border-color: var(--hwr-red);
-		outline: 2px solid var(--hwr-red);
-		outline-offset: 1px;
 	}
 
 	button {
