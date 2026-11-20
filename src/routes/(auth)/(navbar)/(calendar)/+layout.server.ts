@@ -1,24 +1,10 @@
 import type { LayoutServerLoad } from './$types';
-import { linkLessons, assignmentsOf } from '#lib/server/modules/personal.ts';
 import { syncCourse } from '#lib/server/lessons/sync.ts';
-import {
-	courseTable,
-	eventTable,
-	lessonTable,
-	moduleTable,
-	userTable
-} from '#lib/server/db/schema.ts';
-import { and, asc, eq, or } from 'drizzle-orm';
+import { courseTable } from '#lib/server/db/schema.ts';
+import { eq } from 'drizzle-orm';
 import { db } from '#lib/server/db/index.ts';
+import { eventsOf, lessonsOf, sourceOf, titleOf } from '#lib/server/calendar/events.ts';
 import type { CalendarEvent, CalendarSource } from 'svelte5plus-calendar';
-
-const KIND_NAMES: Record<string, string> = {
-	SU: 'Seminaristischer Unterricht',
-	PÜ: 'Praktische Übung',
-	PCÜ: 'Seminar am PC',
-	PT: 'Praxistransfer',
-	SI: 'Seminaristischer Intensivunterricht'
-};
 
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const course = locals.user.course_id
@@ -35,70 +21,26 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		}
 	}
 
-	const modules = db
-		.select()
-		.from(moduleTable)
-		.where(eq(moduleTable.user_id, locals.user.id))
-		.all();
-	const modulesById = new Map(modules.map((module) => [module.id, module]));
+	const courses = lessonsOf(locals.user).map(
+		(lesson, index) =>
+			({
+				id: `${index}`,
+				title: lesson.title,
+				start: lesson.start,
+				end: lesson.end,
+				location: lesson.location,
+				description: lesson.description,
+				color: lesson.exam ? 'red' : undefined,
+				calendarId: 'HWR'
+			}) satisfies CalendarEvent
+	);
 
-	const lessons = course
-		? linkLessons(
-				db
-					.select()
-					.from(lessonTable)
-					.where(eq(lessonTable.course_id, course.id))
-					.orderBy(asc(lessonTable.starts_at))
-					.all(),
-				modules,
-				assignmentsOf(locals.user.id)
-			)
-		: [];
-
-	const courses = lessons.map((lesson, index) => {
-		const module = lesson.module_id ? modulesById.get(lesson.module_id) : undefined;
-		return {
-			id: `${index}`,
-			title: lesson.code ? `${lesson.code} ${lesson.title}` : lesson.title,
-			start: lesson.starts_at,
-			end: lesson.ends_at,
-			location: lesson.location,
-			description: [
-				module && `Modul: ${module.name}`,
-				lesson.kind && `Art: ${KIND_NAMES[lesson.kind] ?? lesson.kind}`,
-				lesson.description
-			]
-				.filter(Boolean)
-				.join('\n'),
-			color: lesson.kind === 'Klausur' ? 'red' : undefined,
-			calendarId: 'HWR'
-		} satisfies CalendarEvent;
-	});
-
-	const eventRows = db
-		.select({ event: eventTable })
-		.from(eventTable)
-		.innerJoin(userTable, eq(eventTable.user_id, userTable.id))
-		.where(
-			or(
-				and(eq(eventTable.type, 'private'), eq(eventTable.user_id, locals.user.id)),
-				and(
-					eq(eventTable.type, 'public'),
-					locals.user.course_id
-						? eq(userTable.course_id, locals.user.course_id)
-						: eq(userTable.id, '')
-				),
-				eq(eventTable.type, 'global')
-			)
-		)
-		.all();
-
-	const events = eventRows.map(({ event: it }) => {
+	const events = eventsOf(locals.user).map((it) => {
 		return {
 			id: it.id,
-			editable: (locals.userId == it.user_id) || (it.type == "global" && locals.user.asta_member),
-			calendarId: it.type == 'private' ? 'private' : 'public',
-			title: (it.type == 'global' ? 'AStA: ' : '') + it.title,
+			editable: locals.userId == it.user_id || (it.type == 'global' && locals.user.asta_member),
+			calendarId: sourceOf(it),
+			title: titleOf(it),
 			location: it.location,
 			description: it.description ?? '',
 			start: it.start,

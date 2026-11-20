@@ -37,7 +37,12 @@ export const userTable = sqliteTable('user', {
 	name: text('name').unique().notNull(),
 	password_hash: text('password_hash').notNull(),
 	course_id: text('course_id').references(() => courseTable.id, { onDelete: 'set null' }),
-	asta_member: integer('asta_member', { mode: 'boolean' }).default(false).notNull()
+	asta_member: integer('asta_member', { mode: 'boolean' }).default(false).notNull(),
+	// the secret in the URL of the iCal feed. Empty means the feed is off
+	ical_token: text('ical_token').unique(),
+	ical_lessons: integer('ical_lessons', { mode: 'boolean' }).default(true).notNull(),
+	ical_private: integer('ical_private', { mode: 'boolean' }).default(true).notNull(),
+	ical_public: integer('ical_public', { mode: 'boolean' }).default(true).notNull()
 });
 
 export type Session = {
