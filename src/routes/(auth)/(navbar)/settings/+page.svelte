@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { refreshAll } from '$app/navigation';
 	import { pomodoro } from '#lib/pomodoro.svelte.ts';
+	import Busy from '#lib/components/Busy.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -19,8 +20,8 @@
 	async function retry() {
 		retrying = true;
 		try {
-			// keep the indicator visible for a moment, event if the retry fails instantly
-			await Promise.all([refreshAll(), new Promise((resolve) => setTimeout(resolve, 600))]);
+			// keep the indicator visible for a moment, even if the retry fails instantly
+			await Promise.all([refreshAll(), new Promise((resolve) => setTimeout(resolve, 800))]);
 		} finally {
 			retrying = false;
 		}
@@ -57,12 +58,7 @@
 				aria-busy={retrying}
 				onclick={retry}
 			>
-				{#if retrying}
-					<span class="spinner" aria-hidden="true"></span>
-					Lade …
-				{:else}
-					Erneut versuchen
-				{/if}
+				<Busy pending={retrying}>Erneut versuchen</Busy>
 			</button>
 		</div>
 	{:else}
@@ -245,16 +241,14 @@
 	}
 
 	.error button {
-		display: inline-flex;
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
-		min-width: 12rem;
 	}
 
-	.error button:disabled {
-		cursor: default;
-		opacity: 0.8;
+	button:disabled {
+		opacity: 0.6;
+		cursor: wait;
 	}
 
 	.secondary {
@@ -266,21 +260,6 @@
 	.secondary:hover {
 		border-color: var(--secondary);
 		background-color: var(--background);
-	}
-
-	.spinner {
-		width: 0.9rem;
-		height: 0.9rem;
-		border: 2px solid var(--border);
-		border-top-color: var(--primary);
-		border-radius: 50%;
-		animation: spin 0.7s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 
 	.hint {

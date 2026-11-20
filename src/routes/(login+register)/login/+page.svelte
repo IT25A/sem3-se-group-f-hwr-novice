@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
+	import Busy from '#lib/components/Busy.svelte';
 
 	let { form }: PageProps = $props();
 
@@ -51,7 +52,7 @@
 	</label>
 
 	<button type="submit" disabled={submitting}>
-		{submitting ? 'Einloggen …' : 'Einloggen'}
+		<Busy pending={submitting}>Einloggen</Busy>
 	</button>
 </form>
 

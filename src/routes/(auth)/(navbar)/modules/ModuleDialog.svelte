@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Modal from '#lib/components/Modal.svelte';
+	import Busy from '#lib/components/Busy.svelte';
 
 	let modal = $state<ReturnType<typeof Modal>>();
 	let formElement = $state<HTMLFormElement>();
@@ -76,8 +77,7 @@
 		<div class="buttons">
 			<button type="button" class="secondary" onclick={() => modal?.close()}>Abbrechen</button>
 			<button type="submit" class="primary" disabled={submitting}>
-				<span style:visibility={submitting ? 'hidden' : 'visible'}>Anlegen</span>
-				<span style:visibility={submitting ? 'visible' : 'hidden'}>Anlegen …</span>
+				<Busy pending={submitting}>Anlegen</Busy>
 			</button>
 		</div>
 	</form>

@@ -140,22 +140,16 @@
 
 	/* Two stacked labels keep the width the same while saving */
 	.content :global(.primary) {
-		display: inline-grid;
-		justify-items: center;
 		border: 0;
 		background-color: var(--hwr-red);
 		color: white;
-	}
-
-	.content :global(.primary span) {
-		grid-area: 1 / 1;
 	}
 
 	.content :global(.primary:hover) {
 		background-color: var(--hwr-red-darker);
 	}
 
-	.content :global(.primary:disabled) {
+	.content :global(button:disabled) {
 		opacity: 0.6;
 		cursor: wait;
 	}
