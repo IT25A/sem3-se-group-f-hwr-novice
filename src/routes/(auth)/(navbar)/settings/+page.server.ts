@@ -1,4 +1,4 @@
-import { fail, redirect } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
 import { db } from '#lib/server/db/index.ts';
@@ -43,7 +43,7 @@ export const actions = {
 
 		if (value === 'none') {
 			db.update(userTable).set({ course_id: null }).where(eq(userTable.id, locals.user.id)).run();
-			redirect(303, '/dashboard');
+			return { success: true, value, cohort };
 		}
 
 		const [study, course_part] = value.split('/');
@@ -86,6 +86,6 @@ export const actions = {
 			.where(eq(userTable.id, locals.user.id))
 			.run();
 		adoptCatalog(locals.user.id, course);
-		redirect(303, '/dashboard');
+		return { success: true, value, cohort };
 	}
 } satisfies Actions;

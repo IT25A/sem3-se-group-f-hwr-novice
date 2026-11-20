@@ -2,6 +2,7 @@
 	import { courseName } from '#lib/courses/label.ts';
 	import { enhance } from '$app/forms';
 	import { refreshAll } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { pomodoro } from '#lib/pomodoro.svelte.ts';
 	import Busy from '#lib/components/Busy.svelte';
 	import type { PageProps } from './$types';
@@ -16,6 +17,10 @@
 	] as const;
 
 	let retrying = $state(false);
+	let saving = $state(false);
+	let saved = $state(false); // shows the dashboard link
+	let confirmed = $state(false); // shows "Gespeichert" on the button for a moment
+	let confirmedTimer: ReturnType<typeof setTimeout>;
 
 	async function retry() {
 		retrying = true;
@@ -62,7 +67,31 @@
 			</button>
 		</div>
 	{:else}
-		<form method="POST" action="?/course" use:enhance>
+		<form
+			method="POST"
+			action="?/course"
+			oninput={() => {
+				saved = false;
+				confirmed = false;
+			}}
+			use:enhance={() => {
+				saving = true;
+				saved = false;
+				confirmed = false;
+
+				return async ({ result, update }) => {
+					await update({ reset: false });
+					saving = false;
+					saved = result.type === 'success';
+
+					if (saved) {
+						confirmed = true;
+						clearTimeout(confirmedTimer);
+						confirmedTimer = setTimeout(() => (confirmed = false), 2000);
+					}
+				};
+			}}
+		>
 			<label>
 				Studiengang und Kurs
 				<select name="course" required>
@@ -87,7 +116,22 @@
 				/>
 			</label>
 
-			<button type="submit">Speichern</button>
+			<div class="save">
+				<button type="submit" disabled={saving}>
+					<Busy pending={saving}>
+						<span class="labels">
+							<span class:invisible={confirmed}>Speichern</span>
+							<span class:invisible={!confirmed}>✓ Gespeichert</span>
+						</span>
+					</Busy>
+				</button>
+				<p class="next" role="status">
+					{#if saved}
+						<span class="sr-only">Gespeichert</span>
+						<a href={resolve('/(auth)/(navbar)/(calendar)/dashboard')}>Weiter zum Dashboard</a>
+					{/if}
+				</p>
+			</div>
 		</form>
 	{/if}
 	{#if form?.error}
@@ -264,5 +308,48 @@
 
 	.hint {
 		color: var(--hwr-red);
+	}
+
+	.save {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.save button {
+		align-self: center;
+	}
+
+	.saved {
+		margin: 0;
+		color: var(--secondary);
+	}
+
+	.next a {
+		color: var(--hwr-red);
+		font-weight: 600;
+	}
+
+	.labels {
+		display: inline-grid;
+		justify-items: center;
+	}
+
+	.labels span {
+		grid-area: 1 / 1;
+	}
+
+	.invisible {
+		visibility: hidden;
+	}
+
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 </style>
