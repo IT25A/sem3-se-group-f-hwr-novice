@@ -21,6 +21,8 @@
 	let saved = $state(false); // shows the dashboard link
 	let confirmed = $state(false); // shows "Gespeichert" on the button for a moment
 	let confirmedTimer: ReturnType<typeof setTimeout>;
+	let defaultsSaved = $state(false);
+	let defaultsTimer: ReturnType<typeof setTimeout>;
 
 	async function retry() {
 		retrying = true;
@@ -30,6 +32,14 @@
 		} finally {
 			retrying = false;
 		}
+	}
+
+	// Saves the defaults and shows a short confirmation.
+	function saveDefaults() {
+		pomodoro.applyConfig();
+		defaultsSaved = true;
+		clearTimeout(defaultsTimer);
+		defaultsTimer = setTimeout(() => (defaultsSaved = false), 2000);
 	}
 </script>
 
@@ -140,7 +150,12 @@
 </section>
 
 <section>
-	<h2>Pomodoro-Standardwerte</h2>
+	<div class="head">
+		<h2>Pomodoro-Standardwerte</h2>
+		<span class="saved" role="status">
+			{#if defaultsSaved}✓ Gespeichert{/if}
+		</span>
+	</div>
 	<p>
 		Diese Werte gelten, wenn du auf der Pomodoro-Seite nichts anderes wählst. Sie werden sofort
 		gespeichert, und zwar in diesem Browser.
@@ -158,7 +173,7 @@
 					min={field.min}
 					max={field.max}
 					bind:value={pomodoro.config[field.key]}
-					onchange={() => pomodoro.applyConfig()}
+					onchange={saveDefaults}
 					disabled={pomodoro.status !== 'idle'}
 				/>
 			</label>
@@ -175,8 +190,16 @@
 		padding-top: 2.5rem;
 	}
 
+	.head {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 0.75rem;
+		margin-bottom: 0.5rem;
+	}
+
 	h2 {
-		margin: 0 0 0.5rem;
+		margin: 0;
 	}
 
 	p {
@@ -323,7 +346,8 @@
 
 	.saved {
 		margin: 0;
-		color: var(--secondary);
+		color: #1a7f37;
+		font-weight: 600;
 	}
 
 	.next a {
