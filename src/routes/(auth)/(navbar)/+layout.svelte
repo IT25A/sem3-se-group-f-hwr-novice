@@ -60,6 +60,7 @@
 
 <svelte:head>
 	<title>{title}</title>
+	<meta name="theme-color" content="#d82425" media="(max-width: 70rem)" />
 </svelte:head>
 
 <svelte:window onkeydown={(event) => event.key === 'Escape' && close()} />
@@ -208,15 +209,16 @@
 		.wrapper {
 			flex-direction: column;
 			--topbar: 3.5rem;
+			padding-top: var(--topbar);
 		}
 
 		.topbar {
 			display: flex;
 			align-items: center;
 			gap: 0.75rem;
-			position: relative;
+			position: fixed;
+			inset: 0 0 auto 0;
 			z-index: 30;
-			flex-shrink: 0;
 			height: var(--topbar);
 			padding: 0 0.75rem;
 			box-sizing: border-box;

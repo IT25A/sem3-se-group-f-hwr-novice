@@ -4,7 +4,11 @@
 	let { children } = $props();
 </script>
 
-<div class="page">
+<svelte:head>
+	<meta name="theme-color" content="#f7f5f3" />
+</svelte:head>
+
+<div class="page auth-page">
 	<main>
 		<a class="brand" href={resolve('/')}>HWR Novice</a>
 		<div class="card">
@@ -15,6 +19,11 @@
 </div>
 
 <style>
+	/* The area behind the status bar takes the page background on iOS 26 */
+	:global(html:has(.auth-page)) {
+		background-color: var(--background);
+	}
+
 	.page {
 		background-color: var(--background);
 		font-family: 'Inter', sans-serif;
