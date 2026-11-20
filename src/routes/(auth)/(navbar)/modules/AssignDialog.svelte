@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import Modal from '#lib/components/Modal.svelte';
+	import Busy from '#lib/components/Busy.svelte';
+	import { Pending } from '#lib/pending.ts';
+
+	const pending = new Pending();
 
 	type Group = { title: string; count: number; next: Date | null };
 	type Rule = { title: string; module: string };
@@ -30,8 +34,13 @@
 			</p>
 			<ul class="rows">
 				{#each unassigned as group (group.title)}
+					{@const assigning = pending.has(`assign:${group.title}`)}
 					<li>
-						<form method="POST" action="?/assign" use:enhance>
+						<form
+							method="POST"
+							action="?/assign"
+							use:enhance={pending.submit(`assign:${group.title}`)}
+						>
 							<input type="hidden" name="title" value={group.title} />
 							<span class="info">
 								<strong>{group.title}</strong>
@@ -48,7 +57,9 @@
 									<option value={module.id}>{module.name}</option>
 								{/each}
 							</select>
-							<button type="submit" class="secondary">Zuordnen</button>
+							<button type="submit" class="secondary" disabled={assigning}>
+								<Busy pending={assigning}>Zuordnen</Busy>
+							</button>
 						</form>
 					</li>
 				{/each}
@@ -63,14 +74,21 @@
 			<h3>Manuelle Zuordnungen</h3>
 			<ul class="rows manual">
 				{#each manual as rule (rule.title)}
+					{@const unassigning = pending.has(`unassign:${rule.title}`)}
 					<li>
-						<form method="POST" action="?/unassign" use:enhance>
+						<form
+							method="POST"
+							action="?/unassign"
+							use:enhance={pending.submit(`unassign:${rule.title}`)}
+						>
 							<input type="hidden" name="title" value={rule.title} />
 							<span class="line">
 								<strong>{rule.title}</strong>
 								<span class="module">→ {rule.module}</span>
 							</span>
-							<button type="submit" class="quiet">Aufheben</button>
+							<button type="submit" class="quiet" disabled={unassigning}>
+								<Busy pending={unassigning}>Aufheben</Busy>
+							</button>
 						</form>
 					</li>
 				{/each}

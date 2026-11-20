@@ -4,6 +4,10 @@
 	import type { PageProps } from './$types';
 	import ModuleDialog from './ModuleDialog.svelte';
 	import AssignDialog from './AssignDialog.svelte';
+	import Busy from '#lib/components/Busy.svelte';
+	import { Pending } from '#lib/pending.ts';
+
+	const pending = new Pending();
 
 	let { data }: PageProps = $props();
 
@@ -75,6 +79,8 @@
 	{#if data.progress.length > 0}
 		<div class="modules">
 			{#each data.progress as item (item.module.id)}
+				{@const toggling = pending.has(`toggle:${item.module.id}`)}
+				{const removing = pending.has(`remove: ${item.module.id}`)}
 				<article class="module" class:passed={item.passed}>
 					<p class="tags">
 						{#if item.module.code}<span class="pill">{item.module.code}</span>{/if}
@@ -138,21 +144,30 @@
 						</p>
 					{/if}
 					<div class="actions">
-						<form method="POST" action="?/toggle" use:enhance>
+						<form
+							method="POST"
+							action="?/toggle"
+							use:enhance={pending.submit(`toggle:${item.module.id}`)}
+						>
 							<input type="hidden" name="module_id" value={item.module.id} />
-							<button type="submit" class="secondary">
-								{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
+							<button type="submit" class="secondary" disabled={toggling}>
+								<Busy pending={toggling}>
+									{item.passed ? 'Markierung entfernen' : 'Als bestanden markieren'}
+								</Busy>
 							</button>
 						</form>
 						<form
 							method="POST"
 							action="?/remove"
-							use:enhance={({ cancel }) => {
-								if (!confirm(`Modul „${item.module.name}“ löschen?`)) cancel();
-							}}
+							use:enhance={pending.submit(
+								`remove:${item.module.id}`,
+								`Modul „${item.module.name}“ löschen?`
+							)}
 						>
 							<input type="hidden" name="module_id" value={item.module.id} />
-							<button type="submit" class="danger">Löschen</button>
+							<button type="submit" class="danger" disabled={removing}>
+								<Busy pending={removing}>Löschen</Busy>
+							</button>
 						</form>
 					</div>
 				</article>
@@ -435,6 +450,11 @@
 		font: inherit;
 		font-weight: 700;
 		cursor: pointer;
+	}
+
+	button:disabled {
+		opacity: 0.6;
+		cursor: wait;
 	}
 
 	.primary {
