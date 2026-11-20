@@ -132,6 +132,11 @@
 						{/if}
 					</dl>
 
+					{#if !item.includedInTotal}
+						<p class="excluded">
+							Zählt nicht zum Gesamtfortschritt, da das Modul nicht zum aktuellen Semester gehört.
+						</p>
+					{/if}
 					<div class="actions">
 						<form method="POST" action="?/toggle" use:enhance>
 							<input type="hidden" name="module_id" value={item.module.id} />
@@ -396,6 +401,13 @@
 
 	.none {
 		color: var(--secondary);
+	}
+
+	.excluded {
+		margin: 0.75rem 0 0;
+		font-size: 0.85rem;
+		color: var(--secondary);
+		font-style: italic;
 	}
 
 	.actions {

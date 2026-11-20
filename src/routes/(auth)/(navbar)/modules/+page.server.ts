@@ -89,17 +89,6 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.filter((lesson) => lesson.ends_at > now)
 		.sort((a, b) => a.starts_at.getTime() - b.starts_at.getTime());
 
-	const progress = calculateProgress(modules, lessons, selfStudyMinutes, now).map((item) => {
-		const own = upcoming.filter((lesson) => lesson.module_id === item.module.id);
-		return {
-			...item,
-			focusMinutes: selfStudyMinutes.get(item.module.id) ?? 0,
-			passed: passedIds.has(item.module.id),
-			next: own.find((lesson) => !EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null,
-			examAt: own.find((lesson) => EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null
-		};
-	});
-
 	const currentCodes = new Set(
 		course
 			? catalogFor(course.study, course.cohort, semesterOf(course.cohort)).map(
@@ -117,8 +106,20 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const countsForSemester = (code: string | null) =>
 		!course || !code || !catalogCodes.has(code) || currentCodes.has(code);
 
+	const progress = calculateProgress(modules, lessons, selfStudyMinutes, now).map((item) => {
+		const own = upcoming.filter((lesson) => lesson.module_id === item.module.id);
+		return {
+			...item,
+			focusMinutes: selfStudyMinutes.get(item.module.id) ?? 0,
+			passed: passedIds.has(item.module.id),
+			includedInTotal: countsForSemester(item.module.code),
+			next: own.find((lesson) => !EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null,
+			examAt: own.find((lesson) => EXAM_KINDS.includes(lesson.kind))?.starts_at ?? null
+		};
+	});
+
 	const semesterLp = progress
-		.filter((item) => item.passed && countsForSemester(item.module.code))
+		.filter((item) => item.passed && item.includedInTotal)
 		.reduce((sum, item) => sum + item.module.lp, 0);
 	const ects = { earned: earlier + semesterLp, earlier, total: TOTAL_ECTS };
 
