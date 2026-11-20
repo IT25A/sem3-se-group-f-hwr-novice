@@ -1,8 +1,10 @@
 import { type Course, type Lesson, SCHEDULE_URL } from './hwrical';
 import ICAL from 'ical';
 
+const TIMEOUT_MS = 5000;
+
 export async function fetchScheduleICal(study: string, course: Course) {
-	const res = await fetch(SCHEDULE_URL(study, course));
+	const res = await fetch(SCHEDULE_URL(study, course), { signal: AbortSignal.timeout(TIMEOUT_MS) });
 	if (!res.ok) throw new Error(`Schedule request failed with status ${res.status}`);
 	return ICAL.parseICS(await res.text());
 }

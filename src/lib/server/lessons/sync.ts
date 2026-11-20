@@ -9,6 +9,10 @@ import { lessonKey, parseLesson, describeLesson } from './parser';
 // the feed is asked at most this often per course.
 const MIN_INTERVAL_MS = 15 * 60 * 1000;
 
+// after a failed request the feed is left alone for this long.
+const RETRY_AFTER_MS = 2 * 60 * 1000;
+const failures = new Map<Course['id'], { at: number; error: unknown }>();
+
 // timestables from before the archive existed, by "study/course_part/cohort"
 const BASELINES: Record<string, string[]> = {
 	'informatik/kursa/2025': BASELINE
@@ -52,10 +56,18 @@ export async function syncCourse(course: Course) {
 
 	insertBaseline(course);
 
+	const failure = failures.get(course.id);
+	if (failure && Date.now() - failure.at < RETRY_AFTER_MS) throw failure.error;
+
 	const feed = await fetchLessons(course.study, {
 		course_part: course.course_part,
 		year_part: `semester${semester}`
+	}).catch((error) => {
+		failures.set(course.id, { at: Date.now(), error });
+		throw error;
 	});
+	failures.delete(course.id);
+
 	if (feed.length === 0) return; // most likely an error, do not delete anything
 
 	const rows = feed.map((lesson) => {
