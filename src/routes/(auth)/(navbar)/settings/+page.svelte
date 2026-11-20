@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { courseName } from '#lib/courses/label.ts';
 	import { enhance } from '$app/forms';
+	import { refreshAll } from '$app/navigation';
 	import { pomodoro } from '#lib/pomodoro.svelte.ts';
 	import type { PageProps } from './$types';
 
@@ -12,6 +13,18 @@
 		{ key: 'long', label: 'Langpause (Min.)', min: 1, max: 60 },
 		{ key: 'every', label: 'Fokuszeit bis zur Langpause', min: 2, max: 10 }
 	] as const;
+
+	let retrying = $state(false);
+
+	async function retry() {
+		retrying = true;
+		try {
+			// keep the indicator visible for a moment, event if the retry fails instantly
+			await Promise.all([refreshAll(), new Promise((resolve) => setTimeout(resolve, 600))]);
+		} finally {
+			retrying = false;
+		}
+	}
 </script>
 
 <h1>Einstellungen</h1>
@@ -32,39 +45,58 @@
 	{/if}
 
 	{#if data.optionsError}
-		<p class="error">DIe Kursliste konnte gerade nicht geladen werden.</p>
+		<div class="error" role="alert">
+			<p>
+				Die Kursliste konnte gerade nicht geladen werden. Der Stundenplan-Dienst ist vermutlich
+				nicht erreichbar.
+			</p>
+			<button
+				type="button"
+				class="secondary"
+				disabled={retrying}
+				aria-busy={retrying}
+				onclick={retry}
+			>
+				{#if retrying}
+					<span class="spinner" aria-hidden="true"></span>
+					Lade …
+				{:else}
+					Erneut versuchen
+				{/if}
+			</button>
+		</div>
+	{:else}
+		<form method="POST" action="?/course" use:enhance>
+			<label>
+				Studiengang und Kurs
+				<select name="course" required>
+					<option value="none">Kein Stundenplan (nur eigene Module)</option>
+					{#each data.options as option (option)}
+						<option value={option} selected={option === (form?.value ?? data.current?.value)}>
+							{courseName(option)}
+						</option>
+					{/each}
+				</select>
+			</label>
+
+			<label>
+				Studienbeginn (Jahr)
+				<input
+					type="number"
+					name="cohort"
+					min="2020"
+					max={data.year}
+					value={form?.cohort ?? data.current?.cohort ?? data.year}
+					required
+				/>
+			</label>
+
+			<button type="submit">Speichern</button>
+		</form>
 	{/if}
 	{#if form?.error}
 		<p class="error">{form.error}</p>
 	{/if}
-
-	<form method="POST" action="?/course" use:enhance>
-		<label>
-			Studiengang und Kurs
-			<select name="course" required>
-				<option value="none">Kein Stundenplan (nur eigene Module)</option>
-				{#each data.options as option (option)}
-					<option value={option} selected={option === (form?.value ?? data.current?.value)}>
-						{courseName(option)}
-					</option>
-				{/each}
-			</select>
-		</label>
-
-		<label>
-			Studienbeginn (Jahr)
-			<input
-				type="number"
-				name="cohort"
-				min="2020"
-				max={data.year}
-				value={form?.cohort ?? data.current?.cohort ?? data.year}
-				required
-			/>
-		</label>
-
-		<button type="submit">Speichern</button>
-	</form>
 </section>
 
 <section>
@@ -205,6 +237,50 @@
 		border-radius: 0.5rem;
 		background-color: #fdecec;
 		color: #8f1a1b;
+		margin-top: 0.75rem;
+	}
+
+	.error p {
+		margin: 0 0 0.75rem;
+	}
+
+	.error button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		min-width: 12rem;
+	}
+
+	.error button:disabled {
+		cursor: default;
+		opacity: 0.8;
+	}
+
+	.secondary {
+		border: 1px solid var(--border);
+		background-color: white;
+		color: var(--primary);
+	}
+
+	.secondary:hover {
+		border-color: var(--secondary);
+		background-color: var(--background);
+	}
+
+	.spinner {
+		width: 0.9rem;
+		height: 0.9rem;
+		border: 2px solid var(--border);
+		border-top-color: var(--primary);
+		border-radius: 50%;
+		animation: spin 0.7s linear infinite;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.hint {
