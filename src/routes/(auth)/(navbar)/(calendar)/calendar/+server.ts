@@ -15,7 +15,7 @@ export const DELETE: RequestHandler = async ({ request, locals }) => {
 	if (event.type == EventType.GLOBAL && !user.asta_member)
 		throw error(403, 'Forbidden to delete this event');
 
-	if (event.user_id != user.id || (user.asta_member && event.type == EventType.GLOBAL))
+	if (event.user_id != user.id && (!user.asta_member && event.type == EventType.GLOBAL))
 		throw error(403, 'Forbidden to delete this event');
 
 	db.delete(eventTable).where(eq(eventTable.id, eventId)).run();
