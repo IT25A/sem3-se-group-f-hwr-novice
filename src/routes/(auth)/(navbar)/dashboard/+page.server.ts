@@ -2,6 +2,7 @@ import type { PageServerLoad } from './$types';
 import { agendaOf } from '#lib/server/dashboard/agenda.ts';
 import { focusOf } from '#lib/server/dashboard/focus.ts';
 import { timelineOf } from '#lib/server/dashboard/semester.ts';
+import { studyPlanOf } from '#lib/server/dashboard/study.ts';
 import { syncCourseOf } from '#lib/server/lessons/sync.ts';
 import { loadOverview, unassignedOf } from '#lib/server/modules/overview.ts';
 
@@ -31,6 +32,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		exams,
 		focus: focusOf(locals.user),
 		unassigned: unassignedOf(lessons, now).length,
-		timeline: locals.user.course_id ? timelineOf(lessons, now) : null
+		timeline: locals.user.course_id ? timelineOf(lessons, now) : null,
+		study: studyPlanOf(progress, lessons, now)
 	};
 };

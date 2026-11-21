@@ -5,6 +5,7 @@
 	import DayBars from './DayBars.svelte';
 	import FocusBars from './FocusBars.svelte';
 	import SemesterTimeline from './SemesterTimeline.svelte';
+	import StudyPlan from './StudyPlan.svelte';
 	import ProgressRing from '#lib/components/ProgressRing.svelte';
 
 	let { data }: PageProps = $props();
@@ -383,29 +384,43 @@
 		</aside>
 	</div>
 
-	{#if data.timeline}
-		<section class="panel wide">
-			<div class="head">
-				<h2>Semesterverlauf</h2>
-				<p class="meta">
-					{[
-						data.semester ? `${data.semester}. Semester` : '',
-						data.timeline.week ? `Semesterwoche ${data.timeline.week}` : ''
-					]
-						.filter(Boolean)
-						.join(' · ')}
-				</p>
-			</div>
-			<SemesterTimeline
-				start={data.timeline.start}
-				end={data.timeline.end}
-				phases={data.timeline.phases}
-				exams={data.timeline.exams}
-				{now}
-			/>
-			<p class="phase-now">{phaseLine}</p>
-			{#if nextLine}<p class="meta">{nextLine}</p>{/if}
-		</section>
+	{#if data.timeline || data.study.length > 0}
+		<div class="grid bottom" class:single={!data.timeline || data.study.length === 0}>
+			{#if data.timeline}
+				<section class="panel">
+					<div class="head">
+						<h2>Semesterverlauf</h2>
+						<p class="meta">
+							{[
+								data.semester ? `${data.semester}. Semester` : '',
+								data.timeline.week ? `Semesterwoche ${data.timeline.week}` : ''
+							]
+								.filter(Boolean)
+								.join(' · ')}
+						</p>
+					</div>
+					<SemesterTimeline
+						start={data.timeline.start}
+						end={data.timeline.end}
+						phases={data.timeline.phases}
+						exams={data.timeline.exams}
+						{now}
+					/>
+					<p class="phase-now">{phaseLine}</p>
+					{#if nextLine}<p class="meta">{nextLine}</p>{/if}
+				</section>
+			{/if}
+
+			{#if data.study.length > 0}
+				<section class="panel">
+					<div class="head">
+						<h2>Selbststudium</h2>
+						<a href={resolve('/(auth)/(navbar)/pomodoro')}>Zur Fokuszeit</a>
+					</div>
+					<StudyPlan rows={data.study} />
+				</section>
+			{/if}
+		</div>
 	{/if}
 </div>
 
@@ -735,8 +750,12 @@
 	}
 
 	/* Semester timeline */
-	.wide {
+	.bottom {
 		margin-top: 1.5rem;
+	}
+
+	.grid.single {
+		grid-template-columns: minmax(0, 1fr);
 	}
 
 	.phase-now {
