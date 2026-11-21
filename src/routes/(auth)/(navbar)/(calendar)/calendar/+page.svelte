@@ -70,11 +70,6 @@
 
 <EventDialog bind:this={eventDialog} canPostGlobal={data.user.asta_member} />
 
-<form id="deleteEvent">
-	<input name="eventId" id="deleteEventInput" />
-	<input type="submit" id="deleteEventSubmit" />
-</form>
-
 <style>
 	.page {
 		display: flex;
