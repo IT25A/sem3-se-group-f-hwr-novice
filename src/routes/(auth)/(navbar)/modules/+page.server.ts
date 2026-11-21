@@ -9,25 +9,12 @@ import {
 	modulePassTable,
 	lessonAssignmentTable
 } from '#lib/server/db/schema.ts';
-import { loadOverview } from '#lib/server/modules/overview.ts';
-
-const NO_MODULE = /wegezeit/i;
+import { loadOverview, unassignedOf } from '#lib/server/modules/overview.ts';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const { now, modules, assignments, lessons, progress, ects, header } = loadOverview(locals.user);
 
-	// lessons without a module, grouped by title.
-	const groups = new Map<string, { title: string; count: number; next: Date | null }>();
-	for (const lesson of lessons) {
-		if (lesson.module_id || NO_MODULE.test(lesson.title)) continue;
-		const group = groups.get(lesson.title) ?? { title: lesson.title, count: 0, next: null };
-		group.count++;
-		if (lesson.starts_at > now && (!group.next || lesson.starts_at < group.next)) {
-			group.next = lesson.starts_at;
-		}
-		groups.set(lesson.title, group);
-	}
-	const unassigned = [...groups.values()].sort((a, b) => a.title.localeCompare(b.title));
+	const unassigned = unassignedOf(lessons, now);
 
 	const manual = assignments.map((assignment) => ({
 		title: assignment.title,

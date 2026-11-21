@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 	import DayBars from './DayBars.svelte';
+	import ProgressRing from '#lib/components/ProgressRing.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -120,6 +121,21 @@
 		[/^online$/i.test(entry.location) ? '' : entry.location, entry.lecturer]
 			.filter(Boolean)
 			.join(' · ');
+
+	const percent = (done: number, total: number) =>
+		total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+
+	// whole calendar days from today until the date
+	function daysUntil(date: Date) {
+		const midnight = (value: Date | number) => new Date(value).setHours(0, 0, 0, 0);
+		return Math.round((midnight(date) - midnight(now)) / 86_400_000);
+	}
+
+	function countdown(date: Date) {
+		const days = daysUntil(date);
+		if (days <= 0) return 'heute';
+		return days === 1 ? 'morgen' : `in ${days} Tagen`;
+	}
 </script>
 
 <div class="page">
@@ -140,82 +156,148 @@
 		</p>
 	{/if}
 
-	<section class="panel">
-		<div class="head">
-			<h2>Agenda</h2>
-			<a href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>Zum Kalender</a>
-		</div>
+	<div class="grid">
+		<section class="panel">
+			<div class="head">
+				<h2>Agenda</h2>
+				<a href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>Zum Kalender</a>
+			</div>
 
-		{#if next}
-			<div class="next">
-				<p class="label">{running ? 'Läuft gerade' : 'Als Nächstes'} · {untilText(next)}</p>
-				<p class="next-title">
-					{next.title}
-					{#if next.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-					{#if next.online}<span class="pill tag">Online</span>{/if}
+			{#if next}
+				<div class="next">
+					<p class="label">{running ? 'Läuft gerade' : 'Als Nächstes'} · {untilText(next)}</p>
+					<p class="next-title">
+						{next.title}
+						{#if next.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+						{#if next.online}<span class="pill tag">Online</span>{/if}
+					</p>
+					<p class="meta">{[range(next), details(next)].filter(Boolean).join(' · ')}</p>
+				</div>
+			{:else}
+				<p class="empty">
+					In den nächsten {data.agenda.days.length} Tagen stehen keine Termine an.
 				</p>
-				<p class="meta">{[range(next), details(next)].filter(Boolean).join(' · ')}</p>
-			</div>
-		{:else}
-			<p class="empty">In den nächsten {data.agenda.days.length} Tagen stehen keine Termine an.</p>
-		{/if}
+			{/if}
 
-		<div class="list">
-			{#each listed as day (day.key)}
-				<ul class="group">
-					{#each day.entries as entry, index (entry.id)}
-						<li class:travel={entry.travel}>
-							<span class="when">
-								{#if index === 0}
-									<strong>{dayName(day.date)}</strong>
-									<small>{dayMonth.format(day.date)}</small>
-								{/if}
-							</span>
-							<span class="time">{entry.time}</span>
-							<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
-							></span>
-							<div class="what">
-								<p class="title">{entry.title}</p>
-								{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
-								{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-								{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
-							</div>
-						</li>
-					{/each}
-				</ul>
-			{/each}
-		</div>
-
-		{#if hiddenCount > 0}
-			<p class="more">
-				… und {hiddenCount}
-				{hiddenCount === 1 ? 'weiterer Termin' : 'weitere Termine'} in den nächsten {data.agenda
-					.days.length} Tagen.
-			</p>
-		{/if}
-
-		{#if listed.length > 0}
-			<p class="legend">
-				{#each LEGEND as [kind, name] (kind)}
-					<span class="key"
-						><span class="dot" style:background-color={COLORS[kind]}></span>{name}</span
-					>
+			<div class="list">
+				{#each listed as day (day.key)}
+					<ul class="group">
+						{#each day.entries as entry, index (entry.id)}
+							<li class:travel={entry.travel}>
+								<span class="when">
+									{#if index === 0}
+										<strong>{dayName(day.date)}</strong>
+										<small>{dayMonth.format(day.date)}</small>
+									{/if}
+								</span>
+								<span class="time">{entry.time}</span>
+								<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
+								></span>
+								<div class="what">
+									<p class="title">{entry.title}</p>
+									{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
+									{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+									{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
+								</div>
+							</li>
+						{/each}
+					</ul>
 				{/each}
-			</p>
-		{/if}
-
-		{#if data.agenda.days.some((day) => day.entries.length > 0)}
-			<div class="overview">
-				<h3 class="day">Belegte Zeit pro Tag (in Stunden)</h3>
-				<DayBars days={data.agenda.days} {now} />
 			</div>
-		{/if}
-	</section>
+
+			{#if hiddenCount > 0}
+				<p class="more">
+					… und {hiddenCount}
+					{hiddenCount === 1 ? 'weiterer Termin' : 'weitere Termine'} in den nächsten {data.agenda
+						.days.length} Tagen.
+				</p>
+			{/if}
+
+			{#if listed.length > 0}
+				<p class="legend">
+					{#each LEGEND as [kind, name] (kind)}
+						<span class="key"
+							><span class="dot" style:background-color={COLORS[kind]}></span>{name}</span
+						>
+					{/each}
+				</p>
+			{/if}
+
+			{#if data.agenda.days.some((day) => day.entries.length > 0)}
+				<div class="overview">
+					<h3 class="day">Belegte Zeit pro Tag (in Stunden)</h3>
+					<DayBars days={data.agenda.days} {now} />
+				</div>
+			{/if}
+		</section>
+
+		<aside class="side">
+			<section class="panel">
+				<div class="head">
+					<h2>Studienfortschritt</h2>
+					<a href={resolve('/(auth)/(navbar)/modules')}>Zu den Modulen</a>
+				</div>
+				<div class="progress">
+					<ProgressRing value={percent(data.ects.earned, data.ects.total)}>
+						<strong class="percent">{percent(data.ects.earned, data.ects.total)}&nbsp;%</strong>
+					</ProgressRing>
+					<dl class="facts">
+						<div>
+							<dt>ECTS</dt>
+							<dd>{data.ects.earned} von {data.ects.total}</dd>
+						</div>
+						{#if data.semester}
+							<div>
+								<dt>Semester</dt>
+								<dd>{data.semester} von 6</dd>
+							</div>
+						{/if}
+						{#if data.modules.total > 0}
+							<div>
+								<dt>Module im Semester</dt>
+								<dd>{data.modules.passed} von {data.modules.total} bestanden</dd>
+							</div>
+						{/if}
+					</dl>
+				</div>
+				{#if data.hasCourse && data.unassigned > 0}
+					<p class="hint">
+						{data.unassigned}
+						{data.unassigned === 1 ? 'Veranstaltung ist' : 'Veranstaltungen sind'} noch keinem Modul zugeordnet.
+						<a href={resolve('/(auth)/(navbar)/modules')}>Zuordnen</a>
+					</p>
+				{/if}
+			</section>
+
+			<section class="panel">
+				<div class="head">
+					<h2>Klausuren</h2>
+				</div>
+				{#if data.exams.length > 0}
+					<ul class="exams">
+						{#each data.exams as exam (exam.id)}
+							<li>
+								<div>
+									<p class="title">{exam.name}</p>
+									<p class="meta">{shortDay(exam.at)} · {clock.format(exam.at)}</p>
+								</div>
+								<span class="countdown" class:soon={daysUntil(exam.at) <= 7}>
+									{countdown(exam.at)}
+								</span>
+							</li>
+						{/each}
+					</ul>
+				{:else}
+					<p class="empty">Keine Klausuren in Sicht.</p>
+				{/if}
+			</section>
+		</aside>
+	</div>
 </div>
 
 <style>
 	.page {
-		max-width: 60rem;
+		max-width: 80rem;
 		padding-bottom: 2rem;
 	}
 
@@ -419,6 +501,92 @@
 	.key .dot {
 		align-self: center;
 		margin-top: 0;
+	}
+
+	/* Layout */
+	.grid {
+		display: grid;
+		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+		gap: 1.5rem;
+		align-items: start;
+	}
+
+	.side {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	@media (max-width: 60rem) {
+		.grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	/* Progress */
+	.progress {
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+		margin-top: 1rem;
+	}
+
+	.percent {
+		font-size: 1.5rem;
+	}
+
+	.facts {
+		display: grid;
+		flex: 1;
+		gap: 0.5rem;
+		margin: 0;
+	}
+
+	.facts div {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+	}
+
+	.facts dt {
+		color: var(--secondary);
+	}
+
+	.facts dd {
+		margin: 0;
+		font-weight: 600;
+		text-align: right;
+	}
+
+	.hint {
+		margin-top: 1rem;
+		padding-top: 0.75rem;
+		border-top: 1px solid var(--border);
+		font-size: 0.9rem;
+		color: var(--secondary);
+	}
+
+	/* Exams */
+	.exams {
+		margin: 0.5rem 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.exams li {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.5rem 0;
+	}
+
+	.countdown {
+		white-space: nowrap;
+		font-weight: 600;
+	}
+
+	.countdown.soon {
+		color: var(--hwr-red);
 	}
 
 	@media (max-width: 40rem) {

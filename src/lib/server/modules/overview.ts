@@ -127,3 +127,23 @@ export function loadOverview(user: Owner) {
 
 	return { now, course, modules, assignments, lessons, progress, ects, header };
 }
+
+const NO_MODULE = /wegezeit/i;
+
+// Lessons without a module, grouped by title.
+export function unassignedOf(
+	lessons: { module_id: string | null; title: string; starts_at: Date }[],
+	now: Date
+) {
+	const groups = new Map<string, { title: string; count: number; next: Date | null }>();
+	for (const lesson of lessons) {
+		if (lesson.module_id || NO_MODULE.test(lesson.title)) continue;
+		const group = groups.get(lesson.title) ?? { title: lesson.title, count: 0, next: null };
+		group.count++;
+		if (lesson.starts_at > now && (!group.next || lesson.starts_at < group.next)) {
+			group.next = lesson.starts_at;
+		}
+		groups.set(lesson.title, group);
+	}
+	return [...groups.values()].sort((a, b) => a.title.localeCompare(b.title));
+}
