@@ -10,17 +10,17 @@ export class Pending {
 	}
 
 	// Use as `use:enhance={pending.submit('key')}`. With a message, asks for confirmation first.
-	submit(key: string, confirmMessage?: string): SubmitFunction {
+	submit(key: string, confirmMessage?: string, onSuccess?: () => void): SubmitFunction {
 		return ({ cancel }) => {
 			if (confirmMessage && !confirm(confirmMessage)) {
 				cancel();
 				return;
 			}
-
 			this.#keys.add(key);
-			return async ({ update }) => {
+			return async ({ result, update }) => {
 				try {
 					await update();
+					if (result.type === 'success') onSuccess?.();
 				} finally {
 					this.#keys.delete(key);
 				}

@@ -6,11 +6,23 @@ import { courseTable, userTable } from '#lib/server/db/schema.ts';
 import { fetchCourseOptions } from '#lib/server/hwrical/courses.ts';
 import { semesterOf } from '#lib/server/courses/semester.ts';
 import { adoptCatalog } from '#lib/server/modules/personal.ts';
+import { createToken } from '#lib/server/ical/token.ts';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	const course = locals.user.course_id
 		? db.select().from(courseTable).where(eq(courseTable.id, locals.user.course_id)).get()
 		: undefined;
+
+	const feed = db
+		.select({
+			token: userTable.ical_token,
+			lessons: userTable.ical_lessons,
+			privateEvents: userTable.ical_private,
+			publicEvents: userTable.ical_public
+		})
+		.from(userTable)
+		.where(eq(userTable.id, locals.user.id))
+		.get();
 
 	let options: string[] = [];
 	let optionsError = false;
@@ -31,7 +43,13 @@ export const load: PageServerLoad = async ({ locals }) => {
 					cohort: course.cohort,
 					semester: semesterOf(course.cohort)
 				}
-			: null
+			: null,
+		ical: {
+			url: feed?.token ? `${url.origin}/ical/${feed.token}.ics` : null,
+			lessons: feed?.lessons ?? true,
+			privateEvents: feed?.privateEvents ?? true,
+			publicEvents: feed?.publicEvents ?? true
+		}
 	};
 };
 
@@ -87,5 +105,33 @@ export const actions = {
 			.run();
 		adoptCatalog(locals.user.id, course);
 		return { success: true, value, cohort };
+	},
+
+	// Chooses what the calendar feed contains
+	icalSources: async ({ request, locals }) => {
+		const formData = await request.formData();
+
+		db.update(userTable)
+			.set({
+				ical_private: formData.has('private'),
+				ical_public: formData.has('public'),
+				// without a course the checkbox is disabled and not sent, so keep the old value
+				...(locals.user.course_id ? { ical_lessons: formData.has('lessons') } : {})
+			})
+			.where(eq(userTable.id, locals.user.id))
+			.run();
+	},
+
+	// Creates the link of the feed. If there is one already, it is replaced by a new one
+	icalToken: async ({ locals }) => {
+		db.update(userTable)
+			.set({ ical_token: createToken() })
+			.where(eq(userTable.id, locals.user.id))
+			.run();
+	},
+
+	// Turns the feed off. The old link stops working
+	icalOff: async ({ locals }) => {
+		db.update(userTable).set({ ical_token: null }).where(eq(userTable.id, locals.user.id)).run();
 	}
 } satisfies Actions;
