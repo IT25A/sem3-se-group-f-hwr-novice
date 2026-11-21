@@ -1,5 +1,6 @@
 import { eventsOf, lessonsOf, sourceOf, titleOf } from '../calendar/events.ts';
 import { EXAM_KINDS } from '../modules/progress.ts';
+import { pauseMinutes } from '../lessons/parser.ts';
 
 export const AGENDA_DAYS = 14;
 
@@ -15,12 +16,18 @@ export type Item = {
 	lecturer: string;
 	online: boolean;
 	travel: boolean; // time to get to the place, not a lesson itself
+	pause: number; // minutes of break inside a lesson
 };
 
 // An item as listed on one day. The time column differs from day to day for long items.
 export type AgendaEntry = Item & { time: string };
 
-export type AgendaDay = { key: string; date: Date; entries: AgendaEntry[] };
+export type AgendaDay = {
+	key: string;
+	date: Date;
+	entries: AgendaEntry[];
+	minutes: { lessons: number; other: number }; // time taken on that day
+};
 
 type Viewer = { id: string; course_id: string | null };
 
@@ -60,6 +67,14 @@ function timeOn(item: Item, from: Date, to: Date) {
 	return 'ganztägig';
 }
 
+// Minutes of the item that fall on the day from..to
+function overlap(item: Item, from: Date, to: Date) {
+	if (!item.end) return 0;
+	const start = Math.max(item.start.getTime(), from.getTime());
+	const end = Math.min(item.end.getTime(), to.getTime());
+	return Math.max(0, (end - start) / 60_000);
+}
+
 // Lessons, exams and events of the user for the next days, grouped by day.
 export function agendaOf(user: Viewer, now = new Date()) {
 	const items: Item[] = [
@@ -72,7 +87,8 @@ export function agendaOf(user: Viewer, now = new Date()) {
 			location: lesson.location,
 			lecturer: lecturerOf(lesson.description),
 			online: isOnline(lesson.location, lesson.description),
-			travel: /wegezeit/i.test(lesson.name)
+			travel: /wegezeit/i.test(lesson.name),
+			pause: pauseMinutes(lesson.description)
 		})),
 		...eventsOf(user).map((event): Item => ({
 			id: event.id,
@@ -83,7 +99,8 @@ export function agendaOf(user: Viewer, now = new Date()) {
 			location: event.location,
 			lecturer: '',
 			online: isOnline(event.location, ''),
-			travel: false
+			travel: false,
+			pause: 0
 		}))
 	];
 
@@ -92,17 +109,25 @@ export function agendaOf(user: Viewer, now = new Date()) {
 	const days: AgendaDay[] = Array.from({ length: AGENDA_DAYS }, (_, index) => {
 		const from = startOfDay(today, index);
 		const to = startOfDay(today, index + 1);
+		const own = items.filter((item) => touches(item, from, to));
 
 		// all-day items first, then by the time they start on this day
 		const order = (entry: AgendaEntry) =>
 			entry.end ? Math.max(entry.start.getTime(), from.getTime()) : -1;
 
-		const entries = items
-			.filter((item) => touches(item, from, to))
+		const entries = own
 			.map((item) => ({ ...item, time: timeOn(item, from, to) }))
 			.sort((a, b) => order(a) - order(b) || a.title.localeCompare(b.title));
 
-		return { key: dayKey(from), date: from, entries };
+		// time taken on this day, the breaks of lessons are left out
+		const minutes = { lessons: 0, other: 0 };
+		for (const item of own) {
+			const taken = Math.max(0, overlap(item, from, to) - item.pause);
+			if (item.kind === 'lesson' || item.kind === 'exam') minutes.lessons += taken;
+			else minutes.other += taken;
+		}
+
+		return { key: dayKey(from), date: from, entries, minutes };
 	});
 
 	// The first item after these days, for when nothing is left in them (holidays).

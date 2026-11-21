@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
+	import DayBars from './DayBars.svelte';
 
 	let { data }: PageProps = $props();
 
@@ -101,12 +102,12 @@
 		return `${label} um ${clock.format(entry.start)}`;
 	}
 
-	function dayLabel(date: Date) {
-		const text = shortDay(date);
+	// "Heute", "Morgen" or the weekday
+	function dayName(date: Date) {
 		const day = new Date(now);
-		if (date.toDateString() === day.toDateString()) return `Heute · ${text}`;
+		if (date.toDateString() === day.toDateString()) return 'Heute';
 		day.setDate(day.getDate() + 1);
-		return date.toDateString() === day.toDateString() ? `Morgen · ${text}` : text;
+		return date.toDateString() === day.toDateString() ? 'Morgen' : WEEKDAYS[date.getDay()];
 	}
 
 	const range = (entry: { start: Date; end: Date | null }) =>
@@ -140,7 +141,10 @@
 	{/if}
 
 	<section class="panel">
-		<h2>Agenda</h2>
+		<div class="head">
+			<h2>Agenda</h2>
+			<a href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>Zum Kalender</a>
+		</div>
 
 		{#if next}
 			<div class="next">
@@ -156,23 +160,31 @@
 			<p class="empty">In den nächsten {data.agenda.days.length} Tagen stehen keine Termine an.</p>
 		{/if}
 
-		{#each listed as day (day.key)}
-			<h3 class="day">{dayLabel(day.date)}</h3>
-			<ul>
-				{#each day.entries as entry (entry.id)}
-					<li class:travel={entry.travel}>
-						<span class="time">{entry.time}</span>
-						<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"></span>
-						<div class="what">
-							<p class="title">{entry.title}</p>
-							{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
-							{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-							{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
-						</div>
-					</li>
-				{/each}
-			</ul>
-		{/each}
+		<div class="list">
+			{#each listed as day (day.key)}
+				<ul class="group">
+					{#each day.entries as entry, index (entry.id)}
+						<li class:travel={entry.travel}>
+							<span class="when">
+								{#if index === 0}
+									<strong>{dayName(day.date)}</strong>
+									<small>{dayMonth.format(day.date)}</small>
+								{/if}
+							</span>
+							<span class="time">{entry.time}</span>
+							<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
+							></span>
+							<div class="what">
+								<p class="title">{entry.title}</p>
+								{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
+								{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+								{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
+							</div>
+						</li>
+					{/each}
+				</ul>
+			{/each}
+		</div>
 
 		{#if hiddenCount > 0}
 			<p class="more">
@@ -182,16 +194,22 @@
 			</p>
 		{/if}
 
-		<p class="legend">
-			{#each LEGEND as [kind, name] (kind)}
-				<span class="key">
-					<span class="dot" style:background-color={COLORS[kind]}></span>{name}
-				</span>
-			{/each}
-			<a class="calendar-link" href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>
-				Zum Kalender
-			</a>
-		</p>
+		{#if listed.length > 0}
+			<p class="legend">
+				{#each LEGEND as [kind, name] (kind)}
+					<span class="key"
+						><span class="dot" style:background-color={COLORS[kind]}></span>{name}</span
+					>
+				{/each}
+			</p>
+		{/if}
+
+		{#if data.agenda.days.some((day) => day.entries.length > 0)}
+			<div class="overview">
+				<h3 class="day">Belegte Zeit pro Tag (in Stunden)</h3>
+				<DayBars days={data.agenda.days} {now} />
+			</div>
+		{/if}
 	</section>
 </div>
 
@@ -217,6 +235,13 @@
 	p {
 		margin: 0;
 		line-height: 1.6;
+	}
+
+	.head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
 	}
 
 	.date {
@@ -271,19 +296,40 @@
 		font-weight: 600;
 	}
 
-	ul {
+	.list {
+		--day-col: 6.5rem;
+		--gap: 0.75rem;
+		margin-top: 1rem;
+	}
+
+	.group {
 		margin: 0;
-		padding: 0;
+		padding: 0.25rem 0;
 		list-style: none;
+	}
+
+	.group + .group {
+		border-top: 1px solid var(--border);
 	}
 
 	li {
 		display: grid;
-		grid-template-columns: 6rem 0.6rem minmax(0, 1fr);
-		gap: 0.75rem;
+		grid-template-columns: var(--day-col) 6rem 0.6rem minmax(0, 1fr);
+		gap: var(--gap);
 		align-items: baseline;
-		padding: 0.6rem 0;
-		border-top: 1px solid var(--border);
+		padding: 0.5rem 0;
+	}
+
+	.when {
+		display: flex;
+		gap: 0.4rem;
+		align-items: baseline;
+		white-space: nowrap;
+	}
+
+	.when small {
+		font-size: 0.8rem;
+		color: var(--secondary);
 	}
 
 	.time {
@@ -318,7 +364,6 @@
 
 	/* Travel times are smaller and quieter than the lessons */
 	li.travel {
-		padding: 0.3rem 0;
 		color: var(--secondary);
 	}
 
@@ -344,7 +389,8 @@
 	}
 
 	.more {
-		margin-top: 0.75rem;
+		padding-top: 0.4rem;
+		padding-left: calc(var(--day-col) + var(--gap));
 	}
 
 	.legend {
@@ -352,7 +398,16 @@
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.25rem 1rem;
-		margin-top: 1.25rem;
+		margin-top: 0.5rem;
+	}
+
+	.overview {
+		margin-top: 1.75rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.overview .day {
+		margin-top: 1rem;
 	}
 
 	.key {
@@ -366,7 +421,28 @@
 		margin-top: 0;
 	}
 
-	.calendar-link {
-		margin-left: auto;
+	@media (max-width: 40rem) {
+		.list {
+			--day-col: 0rem;
+		}
+
+		li {
+			grid-template-columns: 6rem 0.6rem minmax(0, 1fr);
+		}
+
+		.when {
+			grid-column: 1 / -1;
+			flex-direction: row;
+			gap: 0.4rem;
+			align-items: baseline;
+		}
+
+		.when:empty {
+			display: none;
+		}
+
+		.more {
+			padding-left: 0;
+		}
 	}
 </style>
