@@ -20,6 +20,22 @@ body {
 	margin: 0;
 }
 
+/* Building blocks shared by several pages */
+.pill {
+	padding: 0.2rem 0.75rem;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background-color: var(--background);
+	font-size: 0.9rem;
+	color: var(--primary);
+}
+
+.panel {
+	border: 1px solid var(--border);
+	background-color: var(--surface);
+	padding: 1.25rem 1.5rem;
+}
+
 /* iOS Safari zooms into fields with a font size below 16px */
 @media (pointer: coarse) {
 	input,

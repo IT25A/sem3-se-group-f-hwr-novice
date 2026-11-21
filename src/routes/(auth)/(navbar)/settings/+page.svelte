@@ -558,15 +558,6 @@
 		color: var(--secondary);
 	}
 
-	.pill {
-		padding: 0.2rem 0.75rem;
-		border: 1px solid var(--border);
-		border-radius: 999px;
-		background-color: var(--background);
-		font-size: 0.9rem;
-		color: var(--primary);
-	}
-
 	form,
 	.fields {
 		display: flex;

@@ -5,6 +5,7 @@
 	import ModuleDialog from './ModuleDialog.svelte';
 	import AssignDialog from './AssignDialog.svelte';
 	import Busy from '#lib/components/Busy.svelte';
+	import ProgressBar from '#lib/components/ProgressBar.svelte';
 	import { Pending } from '#lib/pending.ts';
 
 	const pending = new Pending();
@@ -28,12 +29,6 @@
 	const focus = (minutes: number) =>
 		minutes < 60 ? `${minutes} Min.` : `${Math.floor(minutes / 60)} Std. ${minutes % 60} Min.`;
 </script>
-
-{#snippet bar(value: number)}
-	<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={value}>
-		<span style:width="{value}%"></span>
-	</div>
-{/snippet}
 
 <div class="page">
 	<h1>Module</h1>
@@ -68,7 +63,7 @@
 				<span class="percent">{percent(data.ects.earned, data.ects.total)}&nbsp;%</span>
 			</p>
 		</div>
-		{@render bar(percent(data.ects.earned, data.ects.total))}
+		<ProgressBar value={percent(data.ects.earned, data.ects.total)} />
 		{#if data.ects.earlier > 0}
 			<p class="note">
 				Inklusive {data.ects.earlier} ECTS aus früheren Semestern (als bestanden angenommen).
@@ -81,7 +76,7 @@
 			{#each data.progress as item (item.module.id)}
 				{@const toggling = pending.has(`toggle:${item.module.id}`)}
 				{@const removing = pending.has(`remove:${item.module.id}`)}
-				<article class="module" class:passed={item.passed}>
+				<article class="module panel" class:passed={item.passed}>
 					<p class="tags">
 						{#if item.module.code}<span class="pill">{item.module.code}</span>{/if}
 						<span class="pill">{item.module.lp} LP</span>
@@ -89,7 +84,7 @@
 					</p>
 					<h2>{item.module.name}</h2>
 
-					{@render bar(percent(item.done, item.total))}
+					<ProgressBar value={percent(item.done, item.total)} />
 					<p class="progress-text">
 						<span>{number.format(item.done)} von {number.format(item.total)} LE</span>
 						<strong>{percent(item.done, item.total)}&nbsp;%</strong>
@@ -260,14 +255,6 @@
 		margin: 0;
 	}
 
-	.pill {
-		padding: 0.2rem 0.75rem;
-		border: 1px solid var(--border);
-		border-radius: 999px;
-		background-color: var(--background);
-		font-size: 0.9rem;
-	}
-
 	.pill.done {
 		border-color: var(--accent);
 		background-color: color-mix(in srgb, var(--accent) 10%, white);
@@ -308,23 +295,6 @@
 		font-weight: 600;
 	}
 
-	/* Progress bar */
-	.bar {
-		height: 0.6rem;
-		margin-top: 0.75rem;
-		border-radius: 999px;
-		background-color: var(--border);
-		overflow: hidden;
-	}
-
-	.bar span {
-		display: block;
-		height: 100%;
-		border-radius: 999px;
-		background-color: var(--accent, var(--hwr-red));
-		transition: width 0.3s;
-	}
-
 	/* Overall progress */
 	.overall-head {
 		display: flex;
@@ -359,6 +329,7 @@
 
 	.module {
 		--accent: var(--hwr-red);
+		--bar-gap: 1.25rem;
 		display: flex;
 		flex-direction: column;
 	}
@@ -370,10 +341,6 @@
 
 	.module h2 {
 		margin-top: 1rem;
-	}
-
-	.module .bar {
-		margin-top: 1.25rem;
 	}
 
 	.progress-text {
