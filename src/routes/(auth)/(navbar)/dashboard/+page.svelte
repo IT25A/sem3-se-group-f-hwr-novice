@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import type { PageProps } from './$types';
 	import DayBars from './DayBars.svelte';
+	import FocusBars from './FocusBars.svelte';
 	import ProgressRing from '#lib/components/ProgressRing.svelte';
 
 	let { data }: PageProps = $props();
@@ -136,6 +137,33 @@
 		if (days <= 0) return 'heute';
 		return days === 1 ? 'morgen' : `in ${days} Tagen`;
 	}
+
+	const WEEK = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+	function focusText(minutes: number) {
+		const hours = Math.floor(minutes / 60);
+		const rest = minutes % 60;
+		if (hours === 0) return `${rest} Min.`;
+		return rest ? `${hours} Std. ${rest} Min.` : `${hours} Std.`;
+	}
+
+	const todayIndex = $derived((new Date(now).getDay() + 6) % 7);
+
+	const focusDays = $derived(
+		data.focus.days.map((minutes, index) => ({
+			label: WEEK[index],
+			minutes,
+			title: `${WEEK[index]}: ${minutes > 0 ? focusText(minutes) : 'keine Fokuszeit'}`
+		}))
+	);
+
+	// only shown if there was focus time in the same period of last week
+	const comparison = $derived.by(() => {
+		if (data.focus.last === 0) return '';
+		const diff = data.focus.minutes - data.focus.last;
+		if (diff === 0) return 'genauso viel wie zur gleichen Zeit letzte Woche';
+		return `${focusText(Math.abs(diff))} ${diff > 0 ? 'mehr' : 'weniger'} als zur gleichen Zeit letzte Woche`;
+	});
 </script>
 
 <div class="page">
@@ -289,6 +317,34 @@
 					</ul>
 				{:else}
 					<p class="empty">Keine Klausuren in Sicht.</p>
+				{/if}
+			</section>
+
+			<section class="panel">
+				<div class="head">
+					<h2>Fokuszeit</h2>
+					{#if data.focus.count > 0}
+						<a href={resolve('/(auth)/(navbar)/pomodoro')}>Zur Fokuszeit</a>
+					{/if}
+				</div>
+				{#if data.focus.count > 0}
+					<p class="total">
+						<strong>{focusText(data.focus.minutes)}</strong>
+						<span>diese Woche</span>
+					</p>
+					<p class="meta">
+						{data.focus.count}
+						{data.focus.count === 1 ? 'Sitzung' : 'Sitzungen'}{comparison ? ` · ${comparison}` : ''}
+					</p>
+					<FocusBars days={focusDays} today={todayIndex} />
+					{#if data.focus.top}
+						<p class="meta top">
+							Meiste Zeit: {data.focus.top.name} ({focusText(data.focus.top.minutes)})
+						</p>
+					{/if}
+				{:else}
+					<p class="empty">Diese Woche noch keine Fokuszeit.</p>
+					<a class="start" href={resolve('/(auth)/(navbar)/pomodoro')}>Fokuszeit starten</a>
 				{/if}
 			</section>
 		</aside>
@@ -587,6 +643,37 @@
 
 	.countdown.soon {
 		color: var(--hwr-red);
+	}
+
+	/* Focus time */
+	.total {
+		margin-top: 1rem;
+	}
+
+	.total strong {
+		font-size: 1.75rem;
+		font-weight: 600;
+	}
+
+	.total span {
+		color: var(--secondary);
+	}
+
+	.top {
+		margin-top: 0.75rem;
+	}
+
+	.start {
+		display: inline-block;
+		margin-top: 1rem;
+		padding: 0.55rem 1rem;
+		border-radius: 0.5rem;
+		background-color: var(--hwr-red);
+		color: white;
+	}
+
+	.start:hover {
+		background-color: var(--hwr-red-darker);
 	}
 
 	@media (max-width: 40rem) {

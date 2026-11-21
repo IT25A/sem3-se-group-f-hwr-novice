@@ -1,5 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { agendaOf } from '#lib/server/dashboard/agenda.ts';
+import { focusOf } from '#lib/server/dashboard/focus.ts';
 import { syncCourseOf } from '#lib/server/lessons/sync.ts';
 import { loadOverview, unassignedOf } from '#lib/server/modules/overview.ts';
 
@@ -27,6 +28,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		semester: header?.semester ?? null,
 		modules: { passed: counted.filter((item) => item.passed).length, total: counted.length },
 		exams,
+		focus: focusOf(locals.user),
 		unassigned: unassignedOf(lessons, now).length
 	};
 };
