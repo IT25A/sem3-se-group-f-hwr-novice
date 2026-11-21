@@ -202,7 +202,7 @@
 				<p class="next" role="status">
 					{#if saved}
 						<span class="sr-only">Gespeichert</span>
-						<a href={resolve('/(auth)/(navbar)/(calendar)/dashboard')}>Weiter zum Dashboard</a>
+						<a href={resolve('/(auth)/(navbar)/dashboard')}>Weiter zum Dashboard</a>
 					{/if}
 				</p>
 			</div>

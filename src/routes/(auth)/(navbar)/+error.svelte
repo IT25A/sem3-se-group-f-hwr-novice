@@ -16,7 +16,7 @@
 
 <div class="buttons">
 	<button type="button" onclick={() => location.reload()}>Seite neu laden</button>
-	<a href={resolve('/(auth)/(navbar)/(calendar)/dashboard')}>Zum Dashboard</a>
+	<a href={resolve('/(auth)/(navbar)/dashboard')}>Zum Dashboard</a>
 </div>
 
 <style>

@@ -115,3 +115,19 @@ export async function syncCourse(course: Course) {
 			.run();
 	});
 }
+
+// Syncs the course of a user. Returns false if the schedule could not be loaded.
+export async function syncCourseOf(user: { course_id: string | null }) {
+	if (!user.course_id) return true;
+
+	const course = db.select().from(courseTable).where(eq(courseTable.id, user.course_id)).get();
+	if (!course) return true;
+
+	try {
+		await syncCourse(course);
+		return true;
+	} catch (error) {
+		console.error('Could not sync the schedule', error);
+		return false;
+	}
+}

@@ -35,7 +35,9 @@ export function lessonsOf(user: Viewer) {
 		const module = lesson.module_id ? modulesById.get(lesson.module_id) : undefined;
 		return {
 			key: lesson.key,
+			name: lesson.title,
 			title: lesson.code ? `${lesson.code} ${lesson.title}` : lesson.title,
+			kind: lesson.kind,
 			start: lesson.starts_at,
 			end: lesson.ends_at,
 			location: lesson.location,
