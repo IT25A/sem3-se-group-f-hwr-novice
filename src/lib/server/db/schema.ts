@@ -173,7 +173,7 @@ export const pomodoroTable = sqliteTable('pomodoro', {
 		.default('running')
 });
 
-enum EventType {
+export enum EventType {
 	PRIVATE = 'private',
 	PUBLIC = 'public',
 	GLOBAL = 'global'

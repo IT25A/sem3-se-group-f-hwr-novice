@@ -1,5 +1,5 @@
 import { fail } from '@sveltejs/kit';
-import type { Actions } from './$types';
+import type { Actions, RequestHandler } from './$types';
 import { db } from '#lib/server/db/index.ts';
 import { eventTable } from '#lib/server/db/schema.ts';
 

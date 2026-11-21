@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Calendar } from 'svelte5plus-calendar';
+	import { Calendar, type CalendarEvent } from 'svelte5plus-calendar';
 	import EventDialog from './EventDialog.svelte';
+	import { json } from '@sveltejs/kit';
 
 	let { data } = $props();
 
@@ -21,6 +22,15 @@
 		blue: '#2563eb'
 	};
 	const colorOf = (color?: string) => PALETTE[color ?? ''];
+
+	function deleteEvent(event: CalendarEvent) {
+		fetch('', {
+			method: 'DELETE',
+			body: JSON.stringify({
+				eventId: event.id
+			})
+		});
+	}
 </script>
 
 <div class="page">
@@ -53,11 +63,17 @@
 			dayStartHour={7}
 			dayEndHour={21}
 			quickCreate={false}
+			onEventDelete={deleteEvent}
 		/>
 	</div>
 </div>
 
 <EventDialog bind:this={eventDialog} canPostGlobal={data.user.asta_member} />
+
+<form id="deleteEvent">
+	<input name="eventId" id="deleteEventInput" />
+	<input type="submit" id="deleteEventSubmit" />
+</form>
 
 <style>
 	.page {
