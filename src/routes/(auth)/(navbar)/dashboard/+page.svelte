@@ -4,6 +4,7 @@
 	import type { PageProps } from './$types';
 	import DayBars from './DayBars.svelte';
 	import FocusBars from './FocusBars.svelte';
+	import SemesterTimeline from './SemesterTimeline.svelte';
 	import ProgressRing from '#lib/components/ProgressRing.svelte';
 
 	let { data }: PageProps = $props();
@@ -163,6 +164,37 @@
 		const diff = data.focus.minutes - data.focus.last;
 		if (diff === 0) return 'genauso viel wie zur gleichen Zeit letzte Woche';
 		return `${focusText(Math.abs(diff))} ${diff > 0 ? 'mehr' : 'weniger'} als zur gleichen Zeit letzte Woche`;
+	});
+
+	// the last day of a phase ("to" is the midnight after it)
+	const lastDay = (date: Date) => new Date(date.getTime() - 1);
+
+	function span(until: Date) {
+		const days = Math.max(1, Math.ceil((until.getTime() - now) / 86_400_000));
+		if (days < 14) return `${days} ${days === 1 ? 'Tag' : 'Tage'}`;
+		return `${Math.round(days / 7)} Wochen`;
+	}
+
+	const phaseLine = $derived.by(() => {
+		const timeline = data.timeline;
+		if (!timeline) return '';
+		const { kind, until } = timeline.current;
+		if (until && kind === 'theory') return `Jetzt: Theoriephase, noch ${span(until)}`;
+		if (until && kind === 'practice') return `Jetzt: Praxisphase, noch ${span(until)}`;
+		return timeline.phases.length > 0
+			? 'Keine weiteren Veranstaltungen im Stundenplan.'
+			: 'Für dieses Semester liegt noch kein Stundenplan vor.';
+	});
+
+	const nextLine = $derived.by(() => {
+		const timeline = data.timeline;
+		if (!timeline) return '';
+		if (timeline.next) {
+			const range = `${dayMonth.format(timeline.next.from)} – ${dayMonth.format(lastDay(timeline.next.to))}`;
+			const lead = timeline.current.kind === 'theory' ? 'Danach Praxisphase, nächste' : 'Nächste';
+			return `${lead} Theoriephase: ${range}`;
+		}
+		return 'Keine weiteren Veranstaltungen im Stundenplan.';
 	});
 </script>
 
@@ -349,6 +381,31 @@
 			</section>
 		</aside>
 	</div>
+
+	{#if data.timeline}
+		<section class="panel wide">
+			<div class="head">
+				<h2>Semesterverlauf</h2>
+				<p class="meta">
+					{[
+						data.semester ? `${data.semester}. Semester` : '',
+						data.timeline.week ? `Semesterwoche ${data.timeline.week}` : ''
+					]
+						.filter(Boolean)
+						.join(' · ')}
+				</p>
+			</div>
+			<SemesterTimeline
+				start={data.timeline.start}
+				end={data.timeline.end}
+				phases={data.timeline.phases}
+				exams={data.timeline.exams}
+				{now}
+			/>
+			<p class="phase-now">{phaseLine}</p>
+			{#if nextLine}<p class="meta">{nextLine}</p>{/if}
+		</section>
+	{/if}
 </div>
 
 <style>
@@ -674,6 +731,16 @@
 
 	.start:hover {
 		background-color: var(--hwr-red-darker);
+	}
+
+	/* Semester timeline */
+	.wide {
+		margin-top: 1.5rem;
+	}
+
+	.phase-now {
+		margin-top: 1rem;
+		font-weight: 600;
 	}
 
 	@media (max-width: 40rem) {
