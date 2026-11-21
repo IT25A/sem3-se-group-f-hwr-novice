@@ -181,9 +181,8 @@
 		const { kind, until } = timeline.current;
 		if (until && kind === 'theory') return `Jetzt: Theoriephase, noch ${span(until)}`;
 		if (until && kind === 'practice') return `Jetzt: Praxisphase, noch ${span(until)}`;
-		return timeline.phases.length > 0
-			? 'Keine weiteren Veranstaltungen im Stundenplan.'
-			: 'Für dieses Semester liegt noch kein Stundenplan vor.';
+		// nothing more in the timetable: in a dual study that is the practice phase
+		return 'Jetzt: Praxisphase';
 	});
 
 	const nextLine = $derived.by(() => {
@@ -194,7 +193,9 @@
 			const lead = timeline.current.kind === 'theory' ? 'Danach Praxisphase, nächste' : 'Nächste';
 			return `${lead} Theoriephase: ${range}`;
 		}
-		return 'Keine weiteren Veranstaltungen im Stundenplan.';
+		return timeline.knownUntil
+			? `Letzter Veranstaltungstag laut Stundenplan: ${dayMonth.format(lastDay(timeline.knownUntil))}`
+			: '';
 	});
 </script>
 
