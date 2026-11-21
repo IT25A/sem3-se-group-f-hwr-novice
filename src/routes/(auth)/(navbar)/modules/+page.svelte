@@ -80,7 +80,7 @@
 		<div class="modules">
 			{#each data.progress as item (item.module.id)}
 				{@const toggling = pending.has(`toggle:${item.module.id}`)}
-				{const removing = pending.has(`remove: ${item.module.id}`)}
+				{@const removing = pending.has(`remove:${item.module.id}`)}
 				<article class="module" class:passed={item.passed}>
 					<p class="tags">
 						{#if item.module.code}<span class="pill">{item.module.code}</span>{/if}
