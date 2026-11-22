@@ -7,6 +7,7 @@
 	import SemesterTimeline from './SemesterTimeline.svelte';
 	import StudyPlan from './StudyPlan.svelte';
 	import ProgressRing from '#lib/components/ProgressRing.svelte';
+	import { pomodoro } from '#lib/pomodoro.svelte.ts';
 
 	let { data }: PageProps = $props();
 
@@ -41,6 +42,14 @@
 		now = Date.now();
 		const timer = setInterval(() => (now = Date.now()), 30_000);
 		return () => clearInterval(timer);
+	});
+
+	const greeting = $derived.by(() => {
+		const hour = new Date(now).getHours();
+		if (hour < 5) return 'Hallo';
+		if (hour < 11) return 'Guten Morgen';
+		if (hour < 18) return 'Guten Tag';
+		return 'Guten Abend';
 	});
 
 	const isOver = (entry: { end: Date | null }) => entry.end !== null && entry.end.getTime() <= now;
@@ -202,8 +211,17 @@
 
 <div class="page">
 	<header>
-		<h1>Hallo, {data.user.name}</h1>
-		<p class="date">{longDay.format(now)}</p>
+		<div>
+			<h1>{greeting}, {data.user.name}</h1>
+			<p class="date">{longDay.format(now)}</p>
+		</div>
+		<a class="action" href={resolve('/(auth)/(navbar)/pomodoro')}>
+			{#if pomodoro.status === 'idle'}
+				Fokuszeit starten
+			{:else}
+				Zum Timer · <span class="clock">{pomodoro.label}</span>
+			{/if}
+		</a>
 	</header>
 
 	{#if !data.hasCourse}
@@ -463,9 +481,34 @@
 		white-space: nowrap;
 	}
 
-	.date {
+	header {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 0.5rem 1.5rem;
 		margin-bottom: 1.5rem;
+	}
+
+	.date {
 		color: var(--secondary);
+	}
+
+	.action {
+		margin-bottom: 0.25rem;
+		padding: 0.65rem 1.25rem;
+		border-radius: 0.5rem;
+		background-color: var(--hwr-red);
+		color: white;
+		text-decoration: none;
+	}
+
+	.action:hover {
+		background-color: var(--hwr-red-darker);
+	}
+
+	.clock {
+		font-variant-numeric: tabular-nums;
 	}
 
 	.notice {
