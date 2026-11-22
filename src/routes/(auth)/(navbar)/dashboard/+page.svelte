@@ -102,8 +102,8 @@
 
 		const tomorrow = new Date(now);
 		tomorrow.setDate(tomorrow.getDate() + 1);
-		const label = day === tomorrow.toDateString() ? 'morgen' : shortDay(entry.start);
-		return `${label} um ${clock.format(entry.start)}`;
+		// the time itself is in the line below
+		return day === tomorrow.toDateString() ? 'morgen' : shortDay(entry.start);
 	}
 
 	// "Heute", "Morgen" or the weekday
