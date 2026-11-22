@@ -17,7 +17,7 @@ Entstanden im Modul Software-Engineering (Gruppe F).
 Voraussetzung: Docker. Ein Befehl startet die App (das Image wird automatisch geladen):
 
 ```sh
-docker run --name hwr-novice -p 3000:3000 -e ORIGIN=http://localhost:3000 -e DATABASE_URL=/data/app.db -e TZ=Europe/Berlin -v hwr-novice-data:/data ghcr.io/it25a/sem3-se-group-f-hwr-novice/app:main-1edda11
+docker run --name hwr-novice -p 3000:3000 -e ORIGIN=http://localhost:3000 -e DATABASE_URL=/data/app.db -e TZ=Europe/Berlin -v hwr-novice-data:/data ghcr.io/it25a/sem3-se-group-f-hwr-novice/app:main-94c3a9c
 ```
 
 Danach **http://localhost:3000** öffnen (nicht `127.0.0.1`, sonst lehnt die App Formulare ab) und einen Account registrieren.
