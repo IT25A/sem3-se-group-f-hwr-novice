@@ -20,6 +20,9 @@ COPY --from=build /app/package.json ./
 
 COPY --from=build /app/drizzle ./drizzle
 COPY --from=build /app/scripts ./scripts
+# files the demo seed script imports
+COPY --from=build /app/src/lib/server/lessons/baseline.ts /app/src/lib/server/lessons/parser.ts ./src/lib/server/lessons/
+COPY --from=build /app/src/lib/server/modules/catalog.ts ./src/lib/server/modules/
 
 RUN mkdir -p /data && chown node:node /data
 
