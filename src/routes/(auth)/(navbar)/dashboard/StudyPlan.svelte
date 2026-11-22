@@ -74,6 +74,7 @@
 	}
 
 	.plan li {
+		position: relative;
 		padding: 0.45rem 0;
 	}
 
