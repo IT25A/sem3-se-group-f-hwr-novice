@@ -318,8 +318,8 @@
 						{/if}
 						{#if data.modules.total > 0}
 							<div>
-								<dt>Module im Semester</dt>
-								<dd>{data.modules.passed} von {data.modules.total} bestanden</dd>
+								<dt>Module im<br />Semester</dt>
+								<dd>{data.modules.passed} von {data.modules.total}<br />bestanden</dd>
 							</div>
 						{/if}
 					</dl>
@@ -374,9 +374,13 @@
 					</p>
 					<FocusBars days={focusDays} today={todayIndex} />
 					{#if data.focus.top}
-						<p class="meta top">
-							Meiste Zeit: {data.focus.top.name} ({focusText(data.focus.top.minutes)})
-						</p>
+						<div class="top">
+							<p class="meta">Meiste Zeit</p>
+							<p class="top-line">
+								<span>{data.focus.top.name}</span>
+								<span class="top-time">{focusText(data.focus.top.minutes)}</span>
+							</p>
+						</div>
 					{/if}
 				{:else}
 					<p class="empty">Diese Woche noch keine Fokuszeit.</p>
@@ -452,9 +456,14 @@
 
 	.head {
 		display: flex;
+		flex-wrap: wrap;
 		align-items: baseline;
 		justify-content: space-between;
-		gap: 0.5rem 1rem;
+		gap: 0.25rem 1rem;
+	}
+
+	.head a {
+		white-space: nowrap;
 	}
 
 	.date {
@@ -625,13 +634,14 @@
 	/* Layout */
 	.grid {
 		display: grid;
-		grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+		grid-template-columns: minmax(0, 1fr) minmax(21rem, 24rem);
 		gap: 1.5rem;
 		align-items: start;
 	}
 
 	.side {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		gap: 1.5rem;
 	}
 
@@ -660,6 +670,7 @@
 		margin: 0;
 	}
 
+	/* If label and value do not fit side by side, the value moves below as a whole */
 	.facts div {
 		display: flex;
 		justify-content: space-between;
@@ -668,12 +679,14 @@
 
 	.facts dt {
 		color: var(--secondary);
+		white-space: nowrap;
 	}
 
 	.facts dd {
 		margin: 0;
 		font-weight: 600;
 		text-align: right;
+		white-space: nowrap;
 	}
 
 	.hint {
@@ -724,6 +737,19 @@
 
 	.top {
 		margin-top: 0.75rem;
+	}
+
+	.top-line {
+		display: flex;
+		justify-content: space-between;
+		gap: 1rem;
+		font-weight: 600;
+	}
+
+	.top-time {
+		white-space: nowrap;
+		font-weight: 400;
+		color: var(--secondary);
 	}
 
 	.start {
