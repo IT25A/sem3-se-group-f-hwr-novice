@@ -17,10 +17,10 @@ Entstanden im Modul Software-Engineering (Gruppe F).
 Voraussetzung: Docker. Ein Befehl startet die App (das Image wird automatisch geladen):
 
 ```sh
-docker run --name hwr-novice -p 3000:3000 -e ORIGIN=http://localhost:3000 -e DATABASE_URL=/data/app.db -e TZ=Europe/Berlin -v hwr-novice-data:/data ghcr.io/it25a/sem3-se-group-f-hwr-novice/app:main-94c3a9c
+docker run --name hwr-novice -p 3000:3000 -e DATABASE_URL=/data/app.db -e TZ=Europe/Berlin -v hwr-novice-data:/data ghcr.io/it25a/sem3-se-group-f-hwr-novice/app:main-c79479f
 ```
 
-Danach **http://localhost:3000** öffnen (nicht `127.0.0.1`, sonst lehnt die App Formulare ab) und einen Account registrieren.
+Danach **http://localhost:3000** öffnen und einen Account registrieren.
 Optional kann in einem zweiten Terminal der Demo-User wie auf der Live-Instanz angelegt werden:
 
 ```sh
@@ -39,7 +39,7 @@ Standardmäßig hat niemand diese Rolle. Auf der Live-Instanz ist sie dem Demo-U
 docker exec hwr-novice node scripts/set-asta.js <Benutzername> on
 ```
 
-(`off` entzieht die Rolle wieder.)
+(`off` entzieht die Rolle wieder.) Wer die Rolle erhält, während er angemeldet ist, muss die Seite einmal neu laden. Erst dann erscheint beim Anlegen eines Termins die Auswahl „Öffentlicher Termin“.
 
 ## Funktionen
 
