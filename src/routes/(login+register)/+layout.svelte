@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import Icon from '#lib/components/Icon.svelte';
 
 	let { children } = $props();
 </script>
@@ -9,6 +10,7 @@
 </svelte:head>
 
 <div class="page auth-page">
+	<a class="back" href={resolve('/')}><Icon name="arrow-left" />Zur Startseite</a>
 	<main>
 		<a class="brand" href={resolve('/')}>HWR Novice</a>
 		<div class="card">
@@ -25,6 +27,7 @@
 	}
 
 	.page {
+		position: relative;
 		background-color: var(--background);
 		font-family: 'Inter', sans-serif;
 	}
@@ -64,6 +67,21 @@
 		padding: 2rem 2.25rem;
 		border: 1px solid var(--border);
 		background-color: var(--surface);
+	}
+
+	.back {
+		position: absolute;
+		top: 1.5rem;
+		left: 2rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		color: var(--secondary);
+		text-decoration: none;
+	}
+
+	.back:hover {
+		color: var(--primary);
 	}
 
 	/* Styles for both forms (login & register) */
