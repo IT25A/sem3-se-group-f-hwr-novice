@@ -256,10 +256,12 @@
 								<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
 								></span>
 								<div class="what">
-									<p class="title">{entry.title}</p>
+									<p class="title">
+										{entry.title}
+										{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+										{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
+									</p>
 									{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
-									{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-									{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
 								</div>
 							</li>
 						{/each}
@@ -559,18 +561,6 @@
 
 	.title {
 		font-weight: 600;
-	}
-
-	/* Title and details side by side if there is room, else below each other */
-	.what {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: baseline;
-		gap: 0 0.75rem;
-	}
-
-	.what .tag {
-		margin-left: 0;
 	}
 
 	/* Travel times are smaller and quieter than the lessons */
