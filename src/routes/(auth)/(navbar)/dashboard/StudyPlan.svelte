@@ -21,18 +21,28 @@
 		const value = percent(done, total);
 		return value >= MIN_SHARE ? value : 0;
 	};
+
+	const hint = (row: Row) =>
+		row.target === null ? row.name : `${row.name}: Soll ${number.format(row.target)} LE`;
 </script>
 
 <ul class="plan">
 	{#each rows as row (row.id)}
-		<li>
+		<li title={hint(row)}>
 			<div class="line">
-				<p class="name">{row.name}</p>
-				{#if row.status}
-					<span class="status" class:behind={row.status === 'behind'}>
-						{row.status === 'on-track' ? 'im Plan' : 'im Rückstand'}
-					</span>
-				{/if}
+				<p class="name">
+					<span
+						class="state"
+						class:ok={row.status === 'on-track'}
+						class:behind={row.status === 'behind'}
+						aria-hidden="true"
+					></span>
+					<span class="text">{row.name}</span>
+					{#if row.status}
+						<span class="sr">{row.status === 'on-track' ? '(im Plan)' : '(im Rückstand)'}</span>
+					{/if}
+				</p>
+				<p class="numbers">{number.format(row.done)} von {number.format(row.total)} LE</p>
 			</div>
 			<div
 				class="bar"
@@ -46,18 +56,15 @@
 					<span class="target" style:left="{percent(row.target, row.total)}%"></span>
 				{/if}
 			</div>
-			<p class="numbers">
-				{number.format(row.done)} von {number.format(row.total)} LE{#if row.target !== null}
-					· Soll {number.format(row.target)}{/if}
-			</p>
 		</li>
 	{/each}
 </ul>
 
-<p class="note">
-	<span class="tick"></span>
-	<span class="text">Soll bis zur Klausur, sonst bis zur letzten Veranstaltung</span>
-</p>
+<ul class="legend">
+	<li><span class="state ok"></span>im Plan</li>
+	<li><span class="state behind"></span>im Rückstand</li>
+	<li><span class="tick"></span>Soll bis zur Klausur, sonst bis zur letzten Veranstaltung</li>
+</ul>
 
 <style>
 	.plan {
@@ -66,8 +73,8 @@
 		list-style: none;
 	}
 
-	li {
-		padding: 0.6rem 0;
+	.plan li {
+		padding: 0.45rem 0;
 	}
 
 	.line {
@@ -78,24 +85,48 @@
 	}
 
 	.name {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		min-width: 0;
 		margin: 0;
 		font-weight: 600;
 	}
 
-	.status {
-		font-size: 0.8rem;
+	.text {
+		overflow: hidden;
+		text-overflow: ellipsis;
 		white-space: nowrap;
-		color: #0f766e;
 	}
 
-	.status.behind {
-		color: var(--hwr-red);
+	.numbers {
+		margin: 0;
+		font-size: 0.9rem;
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		color: var(--secondary);
+	}
+
+	.state {
+		flex-shrink: 0;
+		width: 0.55rem;
+		height: 0.55rem;
+		border-radius: 50%;
+		background-color: transparent;
+	}
+
+	.state.ok {
+		background-color: #0f766e;
+	}
+
+	.state.behind {
+		background-color: var(--hwr-red);
 	}
 
 	.bar {
 		position: relative;
-		height: 0.6rem;
-		margin-top: 0.4rem;
+		height: 0.5rem;
+		margin-top: 0.35rem;
 		border-radius: 999px;
 		background-color: var(--border);
 	}
@@ -117,30 +148,35 @@
 		transform: translateX(-50%);
 	}
 
-	.numbers {
-		margin: 0.3rem 0 0;
-		font-size: 0.9rem;
+	.legend {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 1rem;
+		margin: 0.75rem 0 0;
+		padding: 0;
+		list-style: none;
+		font-size: 0.85rem;
 		color: var(--secondary);
 	}
 
-	.note {
+	.legend li {
 		display: flex;
-		align-items: flex-start;
-		gap: 0.5rem;
-		margin: 0.5rem 0 0;
-		font-size: 0.85rem;
-		color: var(--secondary);
+		align-items: center;
+		gap: 0.4rem;
 	}
 
 	.tick {
 		flex-shrink: 0;
 		width: 2px;
 		height: 0.9rem;
-		margin-top: 0.15rem;
 		background-color: var(--primary);
 	}
 
-	.text {
-		text-wrap: balance;
+	.sr {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
 	}
 </style>

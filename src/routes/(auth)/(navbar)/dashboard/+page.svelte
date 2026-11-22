@@ -219,81 +219,108 @@
 	{/if}
 
 	<div class="grid">
-		<section class="panel">
-			<div class="head">
-				<h2>Agenda</h2>
-				<a href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>Zum Kalender</a>
-			</div>
+		<div class="main">
+			<section class="panel">
+				<div class="head">
+					<h2>Agenda</h2>
+					<a href={resolve('/(auth)/(navbar)/(calendar)/calendar')}>Zum Kalender</a>
+				</div>
 
-			{#if next}
-				<div class="next">
-					<p class="label">{running ? 'Läuft gerade' : 'Als Nächstes'} · {untilText(next)}</p>
-					<p class="next-title">
-						{next.title}
-						{#if next.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-						{#if next.online}<span class="pill tag">Online</span>{/if}
+				{#if next}
+					<div class="next">
+						<p class="label">{running ? 'Läuft gerade' : 'Als Nächstes'} · {untilText(next)}</p>
+						<p class="next-title">
+							{next.title}
+							{#if next.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+							{#if next.online}<span class="pill tag">Online</span>{/if}
+						</p>
+						<p class="meta">{[range(next), details(next)].filter(Boolean).join(' · ')}</p>
+					</div>
+				{:else}
+					<p class="empty">
+						In den nächsten {data.agenda.days.length} Tagen stehen keine Termine an.
 					</p>
-					<p class="meta">{[range(next), details(next)].filter(Boolean).join(' · ')}</p>
-				</div>
-			{:else}
-				<p class="empty">
-					In den nächsten {data.agenda.days.length} Tagen stehen keine Termine an.
-				</p>
-			{/if}
+				{/if}
 
-			<div class="list">
-				{#each listed as day (day.key)}
-					<ul class="group">
-						{#each day.entries as entry, index (entry.id)}
-							<li class:travel={entry.travel}>
-								<span class="when">
-									{#if index === 0}
-										<strong>{dayName(day.date)}</strong>
-										<small>{dayMonth.format(day.date)}</small>
-									{/if}
-								</span>
-								<span class="time">{entry.time}</span>
-								<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
-								></span>
-								<div class="what">
-									<p class="title">
-										{entry.title}
-										{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
-										{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
-									</p>
-									{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
-								</div>
-							</li>
-						{/each}
-					</ul>
-				{/each}
-			</div>
-
-			{#if hiddenCount > 0}
-				<p class="more">
-					… und {hiddenCount}
-					{hiddenCount === 1 ? 'weiterer Termin' : 'weitere Termine'} in den nächsten {data.agenda
-						.days.length} Tagen.
-				</p>
-			{/if}
-
-			{#if listed.length > 0}
-				<p class="legend">
-					{#each LEGEND as [kind, name] (kind)}
-						<span class="key"
-							><span class="dot" style:background-color={COLORS[kind]}></span>{name}</span
-						>
+				<div class="list">
+					{#each listed as day (day.key)}
+						<ul class="group">
+							{#each day.entries as entry, index (entry.id)}
+								<li class:travel={entry.travel}>
+									<span class="when">
+										{#if index === 0}
+											<strong>{dayName(day.date)}</strong>
+											<small>{dayMonth.format(day.date)}</small>
+										{/if}
+									</span>
+									<span class="time">{entry.time}</span>
+									<span class="dot" style:background-color={COLORS[entry.kind]} aria-hidden="true"
+									></span>
+									<div class="what">
+										<p class="title">
+											{entry.title}
+											{#if entry.kind === 'exam'}<span class="pill tag exam">Klausur</span>{/if}
+											{#if entry.online && !entry.travel}<span class="pill tag">Online</span>{/if}
+										</p>
+										{#if details(entry)}<p class="meta">{details(entry)}</p>{/if}
+									</div>
+								</li>
+							{/each}
+						</ul>
 					{/each}
-				</p>
-			{/if}
-
-			{#if data.agenda.days.some((day) => day.entries.length > 0)}
-				<div class="overview">
-					<h3 class="day">Belegte Zeit pro Tag (in Stunden)</h3>
-					<DayBars days={data.agenda.days} {now} />
 				</div>
+
+				{#if hiddenCount > 0}
+					<p class="more">
+						… und {hiddenCount}
+						{hiddenCount === 1 ? 'weiterer Termin' : 'weitere Termine'} in den nächsten {data.agenda
+							.days.length} Tagen.
+					</p>
+				{/if}
+
+				{#if listed.length > 0}
+					<p class="legend">
+						{#each LEGEND as [kind, name] (kind)}
+							<span class="key"
+								><span class="dot" style:background-color={COLORS[kind]}></span>{name}</span
+							>
+						{/each}
+					</p>
+				{/if}
+
+				{#if data.agenda.days.some((day) => day.entries.length > 0)}
+					<div class="overview">
+						<h3 class="day">Belegte Zeit pro Tag (in Stunden)</h3>
+						<DayBars days={data.agenda.days} {now} />
+					</div>
+				{/if}
+			</section>
+
+			{#if data.timeline}
+				<section class="panel">
+					<div class="head">
+						<h2>Semesterverlauf</h2>
+						<p class="meta">
+							{[
+								data.semester ? `${data.semester}. Semester` : '',
+								data.timeline.week ? `Semesterwoche ${data.timeline.week}` : ''
+							]
+								.filter(Boolean)
+								.join(' · ')}
+						</p>
+					</div>
+					<SemesterTimeline
+						start={data.timeline.start}
+						end={data.timeline.end}
+						phases={data.timeline.phases}
+						exams={data.timeline.exams}
+						{now}
+					/>
+					<p class="phase-now">{phaseLine}</p>
+					{#if nextLine}<p class="meta">{nextLine}</p>{/if}
+				</section>
 			{/if}
-		</section>
+		</div>
 
 		<aside class="side">
 			<section class="panel">
@@ -387,47 +414,17 @@
 					<a class="start" href={resolve('/(auth)/(navbar)/pomodoro')}>Fokuszeit starten</a>
 				{/if}
 			</section>
-		</aside>
-	</div>
-
-	{#if data.timeline || data.study.length > 0}
-		<div class="grid bottom" class:single={!data.timeline || data.study.length === 0}>
-			{#if data.timeline}
-				<section class="panel">
-					<div class="head">
-						<h2>Semesterverlauf</h2>
-						<p class="meta">
-							{[
-								data.semester ? `${data.semester}. Semester` : '',
-								data.timeline.week ? `Semesterwoche ${data.timeline.week}` : ''
-							]
-								.filter(Boolean)
-								.join(' · ')}
-						</p>
-					</div>
-					<SemesterTimeline
-						start={data.timeline.start}
-						end={data.timeline.end}
-						phases={data.timeline.phases}
-						exams={data.timeline.exams}
-						{now}
-					/>
-					<p class="phase-now">{phaseLine}</p>
-					{#if nextLine}<p class="meta">{nextLine}</p>{/if}
-				</section>
-			{/if}
 
 			{#if data.study.length > 0}
 				<section class="panel">
 					<div class="head">
 						<h2>Selbststudium</h2>
-						<a href={resolve('/(auth)/(navbar)/pomodoro')}>Zur Fokuszeit</a>
 					</div>
 					<StudyPlan rows={data.study} />
 				</section>
 			{/if}
-		</div>
-	{/if}
+		</aside>
+	</div>
 </div>
 
 <style>
@@ -639,6 +636,12 @@
 		align-items: start;
 	}
 
+	.main {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 1.5rem;
+	}
+
 	.side {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
@@ -670,7 +673,6 @@
 		margin: 0;
 	}
 
-	/* If label and value do not fit side by side, the value moves below as a whole */
 	.facts div {
 		display: flex;
 		justify-content: space-between;
@@ -679,7 +681,6 @@
 
 	.facts dt {
 		color: var(--secondary);
-		white-space: nowrap;
 	}
 
 	.facts dd {
@@ -766,14 +767,6 @@
 	}
 
 	/* Semester timeline */
-	.bottom {
-		margin-top: 1.5rem;
-	}
-
-	.grid.single {
-		grid-template-columns: minmax(0, 1fr);
-	}
-
 	.phase-now {
 		margin-top: 1rem;
 		font-weight: 600;
