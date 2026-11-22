@@ -115,7 +115,7 @@
 						data-sveltekit-preload-data={page.preventPreload ? false : undefined}
 					>
 						{page.display}{#if page.path === '/pomodoro' && pomodoro.status !== 'idle'}
-							{' '}· {pomodoro.label}{/if}
+							{' '}· <span class="time">{pomodoro.label}</span>{/if}
 					</a>
 				</li>
 			{/each}
@@ -184,11 +184,16 @@
 			margin-left 0.1s;
 
 		width: 100%;
+		white-space: nowrap;
 		font-family: 'Inter', sans-serif;
 		color: var(--background);
 		text-decoration: none;
 		font-weight: bold;
 		font-size: 1.2em;
+	}
+
+	.time {
+		font-variant-numeric: tabular-nums;
 	}
 
 	.wrapper {
