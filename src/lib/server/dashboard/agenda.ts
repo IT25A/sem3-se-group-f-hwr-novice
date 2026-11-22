@@ -122,6 +122,9 @@ export function agendaOf(user: Viewer, now = new Date()) {
 		// time taken on this day, the breaks of lessons are left out
 		const minutes = { lessons: 0, other: 0 };
 		for (const item of own) {
+			// a day fully covered by one item (a trip) counts as all-day, not as 24 hours
+			if (overlap(item, from, to) >= (to.getTime() - from.getTime()) / 60_000) continue;
+
 			const taken = Math.max(0, overlap(item, from, to) - item.pause);
 			if (item.kind === 'lesson' || item.kind === 'exam') minutes.lessons += taken;
 			else minutes.other += taken;
