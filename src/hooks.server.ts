@@ -5,18 +5,19 @@ import { db } from '#lib/server/db/index.ts';
 import { userTable } from '#lib/server/db/schema.ts';
 import { eq } from 'drizzle-orm';
 
-const loginUrl = (redirectTo?: string) => `/login?redirectTo=${redirectTo}`;
+const loginUrl = (redirectTo?: string) =>
+	`/login?redirectTo=${encodeURIComponent(redirectTo ?? '/')}`;
 
 async function handleAuth(cookies: Cookies, event: RequestEvent) {
 	const sessionToken = cookies.get('session_token');
 
-	if (!sessionToken) return redirect(301, loginUrl(event.url.pathname));
+	if (!sessionToken) return redirect(303, loginUrl(event.url.pathname));
 
 	const userId = await checkToken(sessionToken);
 
 	if (!userId) {
-		cookies.delete('session_token');
-		return redirect(301, loginUrl(event.url.pathname));
+		cookies.delete('session_token', { path: '/' });
+		return redirect(303, loginUrl(event.url.pathname));
 	}
 
 	event.locals.userId = userId;
