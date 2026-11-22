@@ -16,13 +16,13 @@
 	let assignDialog = $state<ReturnType<typeof AssignDialog>>();
 
 	const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
-	const dateTime = new Intl.DateTimeFormat('de-DE', {
-		weekday: 'short',
-		day: '2-digit',
-		month: '2-digit',
-		hour: '2-digit',
-		minute: '2-digit'
-	});
+	const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+	const dayMonth = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' });
+	const clock = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+	// "Mo, 23.11. · 08:45"
+	const dateTime = (date: Date) =>
+		`${WEEKDAYS[date.getDay()]}, ${dayMonth.format(date)} · ${clock.format(date)}`;
 	const percent = (done: number, total: number) =>
 		total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
 
@@ -119,13 +119,13 @@
 						{#if item.next}
 							<div>
 								<dt>Nächster Termin</dt>
-								<dd>{dateTime.format(item.next)}</dd>
+								<dd>{dateTime(item.next)}</dd>
 							</div>
 						{/if}
 						{#if item.examAt}
 							<div>
 								<dt>Klausur</dt>
-								<dd>{dateTime.format(item.examAt)}</dd>
+								<dd>{dateTime(item.examAt)}</dd>
 							</div>
 						{/if}
 						{#if !item.next && !item.examAt}
