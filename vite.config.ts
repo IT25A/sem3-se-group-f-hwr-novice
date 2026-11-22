@@ -11,6 +11,12 @@ export default defineConfig({
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
 
+			// The app assumes https behind the proxy. Without this, form posts from a local
+			// `docker run` over http://localhost are rejected as cross-site.
+			csrf: { trustedOrigins: ['http://localhost:3000', 'http://127.0.0.1:3000'] },
+
+			// adapter-auto only supports some environments, ...
+
 			// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
 			// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
 			// See https://svelte.dev/docs/kit/adapters for more information about adapters.
