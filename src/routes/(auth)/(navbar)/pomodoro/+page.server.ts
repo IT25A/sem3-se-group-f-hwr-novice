@@ -23,7 +23,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.from(pomodoroTable)
 		.where(completed)
 		.orderBy(desc(pomodoroTable.ended_at))
-		.limit(50)
+		.limit(500)
 		.all();
 
 	const startOfDay = new Date();
