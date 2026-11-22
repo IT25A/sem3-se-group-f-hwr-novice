@@ -1,56 +1,60 @@
-# sv
+# HWR Novice
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Studienbegleiter für Studierende der HWR Berlin: Stundenplan, Termine, Module und Lern-Timer in einer Web-App.
+Entstanden im Modul Software-Engineering (Gruppe F).
 
-## Creating a project
+## Schnellstart: Live-Instanz (empfohlen)
 
-If you're seeing this, you've probably already done this step. Congrats!
+**https://hwr-novice.apps.it25a.de**
 
-```sh
-# create a new project
-npx sv create my-app
-```
+- **Demo-Login:** `Jonas` / `demo-passwort`. Jonas ist ein Demo-Student des Kurses IT25A mit Stundenplan, Modulen, Terminen und Lernhistorie. Er darf gern zum Testen genutzt werden. Seine Daten werden täglich um 12:30 und 22:30 Uhr zurückgesetzt und aufgefrischt, eigene Änderungen gehen dabei verloren.
+- **Eigener Account:** Über „Registrieren" kann zusätzlich ein neuer Account angelegt werden, um die Einrichtung selbst zu erleben.
+- **Kurs IT25A:** Für diesen Kurs sind der vollständige Stundenplan und die Module des Semesters hinterlegt. Dadurch kommen Dashboard und Diagramme (Studienfortschritt, Semesterverlauf, Fokuszeit) am besten zur Geltung. Für andere Informatik-Jahrgänge (2024, 2026) sind nur die Module hinterlegt, bei allen übrigen Kursen legt man sie selbst an.
+- **Android:** Dieselbe URL im Browser öffnen. Die Oberfläche ist primär für den Desktop gestaltet und mobil noch nicht überall optimiert.
 
-To recreate this project with the same configuration:
+## Lokal mit Docker
 
-```sh
-# recreate this project
-npx sv@1.1.1 create --template minimal --types ts --add prettier eslint --install npm hwr-nowice
-```
-
-## Adding features
-
-Add features to your project with `sv add`:
+Voraussetzung: Docker. Ein Befehl startet die App (das Image wird automatisch geladen):
 
 ```sh
-npx sv add
+docker run --name hwr-novice -p 3000:3000 -e ORIGIN=http://localhost:3000 -e DATABASE_URL=/data/app.db -e TZ=Europe/Berlin -v hwr-novice-data:/data ghcr.io/it25a/sem3-se-group-f-hwr-novice/app:main-1edda11
 ```
 
-For example, to add Tailwind CSS:
+Danach **http://localhost:3000** öffnen (nicht `127.0.0.1`, sonst lehnt die App Formulare ab) und einen Account registrieren.
+Optional kann in einem zweiten Terminal der Demo-User wie auf der Live-Instanz angelegt werden:
 
 ```sh
-npx sv add tailwindcss
+docker exec hwr-novice node scripts/seed-demo.js
+docker exec hwr-novice node scripts/set-asta.js Jonas on
 ```
 
-## Developing
+Beenden mit `Strg+C`, späterer Neustart mit `docker start hwr-novice`. Die Daten bleiben im Volume erhalten.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## AStA-Berechtigung
+
+Im Kalender gibt es drei Termintypen: privat, kursintern und öffentlich. **Öffentliche Termine dürfen nur AStA-Mitglieder anlegen und löschen.**
+Standardmäßig hat niemand diese Rolle. Auf der Live-Instanz ist sie dem Demo-User `Jonas` zugewiesen. Lokal vergibt man sie mit:
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+docker exec hwr-novice node scripts/set-asta.js <Benutzername> on
 ```
 
-## Building
+(`off` entzieht die Rolle wieder.)
 
-To create a production version of your app:
+## Funktionen
 
-```sh
-npm run build
-```
+- **Dashboard:** Tagesagenda, Studienfortschritt, Klausuren, Fokuszeit, Selbststudium und Semesterverlauf
+- **Kalender:** Stundenplan der HWR sowie private, kursinterne und öffentliche Termine, mit iCal-Feed für externe Kalender-Apps
+- **Module:** Module des Semesters mit Prüfungsterminen und Bestehensstatus
+- **Pomodoro:** Lern-Timer mit Verlauf, die Zeit wird Modulen zugeordnet
+- **Einstellungen:** Kurs, iCal-Feed und Timer-Dauern
 
-You can preview the production build with `npm run preview`.
+## Technik
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+SvelteKit 3 (Svelte 5) · TypeScript · SQLite mit Drizzle ORM · Docker
+
+## Abgabe und Team
+
+UML-Diagramm, Aufwandsschätzung und Präsentationsfolien werden separat abgegeben.
+
+**Team (Gruppe F):** Melvin Focke, Finn Margraf, Oleksii Khmara, Marc-Michel Münch
