@@ -28,13 +28,14 @@
 
 	.page {
 		position: relative;
+		border-top: 0.5rem solid var(--hwr-red);
 		background-color: var(--background);
 		font-family: 'Inter', sans-serif;
 	}
 
 	main {
 		box-sizing: border-box;
-		min-height: 100dvh;
+		min-height: calc(100dvh - 0.5rem);
 		display: grid;
 		grid-template-rows: 1fr auto 1.5fr;
 		justify-items: center;
