@@ -4,6 +4,9 @@
 	import { resolve } from '$app/paths';
 	import HistoryPanel from './HistoryPanel.svelte';
 
+	// "Kurze Pause" -> "kurze Pause" (for use inside a sentence)
+	const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+
 	let history = $state<ReturnType<typeof HistoryPanel>>();
 
 	const PHASES: Phase[] = ['work', 'short', 'long'];
@@ -75,7 +78,7 @@
 		<div
 			class="cycle"
 			role="img"
-			aria-label="{pomodoro.cycle} von {pomodoro.config.every} Fokuszeiten bis zur Langpause"
+			aria-label="{pomodoro.cycle} von {pomodoro.config.every} Fokuszeiten bis zur langen Pause"
 		>
 			{#each dots as dot (dot)}
 				<span class="dot" class:filled={dot < pomodoro.cycle}></span>
@@ -83,13 +86,13 @@
 		</div>
 		<p class="status" class:notice={pomodoro.finished} aria-live="polite">
 			{#if pomodoro.finished === 'work'}
-				Fokuszeit abgeschlossen. Zeit für eine {PHASE_NAMES[pomodoro.phase]}.
+				Fokuszeit abgeschlossen. Zeit für eine {lowerFirst(PHASE_NAMES[pomodoro.phase])}.
 			{:else if pomodoro.finished}
-				{PHASE_NAMES[pomodoro.finished]} vorbei. Bereit für die nächste Fokuszeit?
+				Die {lowerFirst(PHASE_NAMES[pomodoro.finished])} ist vorbei. Bereit für die nächste Fokuszeit?
 			{:else if untilLong > 0}
-				Noch {untilLong} {untilLong === 1 ? 'Fokuszeit' : 'Fokuszeiten'} bis zur Langpause
+				Noch {untilLong} {untilLong === 1 ? 'Fokuszeit' : 'Fokuszeiten'} bis zur langen Pause
 			{:else}
-				Zeit für die Langpause
+				Zeit für die lange Pause
 			{/if}
 		</p>
 

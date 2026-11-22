@@ -13,9 +13,9 @@
 
 	const fields = [
 		{ key: 'work', label: 'Fokuszeit (Min.)', min: 1, max: 180 },
-		{ key: 'short', label: 'Kurzpause (Min.)', min: 1, max: 60 },
-		{ key: 'long', label: 'Langpause (Min.)', min: 1, max: 60 },
-		{ key: 'every', label: 'Fokuszeit bis zur Langpause', min: 2, max: 10 }
+		{ key: 'short', label: 'Kurze Pause (Min.)', min: 1, max: 60 },
+		{ key: 'long', label: 'Lange Pause (Min.)', min: 1, max: 60 },
+		{ key: 'every', label: 'Fokuszeit bis zur langen Pause', min: 2, max: 10 }
 	] as const;
 
 	let retrying = $state(false);

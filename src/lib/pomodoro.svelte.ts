@@ -7,8 +7,8 @@ export type Config = { work: number; short: number; long: number; every: number 
 
 export const PHASE_NAMES: Record<Phase, string> = {
 	work: 'Fokuszeit',
-	short: 'Kurzpause',
-	long: 'Langpause'
+	short: 'Kurze Pause',
+	long: 'Lange Pause'
 };
 
 const DEFAULT_CONFIG: Config = { work: 25, short: 5, long: 15, every: 4 };
